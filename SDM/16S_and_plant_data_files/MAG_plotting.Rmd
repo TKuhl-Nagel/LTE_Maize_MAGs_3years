@@ -1,0 +1,92 @@
+---
+title: "MAG_plotting"
+author: "Ioannis D. Kampouris"
+date: "2025-03-05"
+output: pdf_document
+---
+
+Please do not forget to change the path to the Dereplicated Genomes.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Run PROKKA in parallel**
+ls *.fasta | parallel --verbose "prokka {} --prefix {.}_out --cpus 1"
+
+**Run checkm2** 
+checkm2  predict -i dereplicated_genomes -o  checked_genomes --threads 10 -x fasta
+
+**classification was run with the code from GTDBtk Release 2020 in Conda**
+gtdbtk classify_wf input_folder output_folder
+
+***Run antismash***
+ls *fasta | parallel --verbose "antismash {} --output-dir antismash2{.} --fullhmmer --clusterhmmer --tigrfam --cc-mibig  --cpus 1 --genefinding-tool prodigal"
+
+**Diamond anotations with PLABASE**
+ls *out/*faa | parallel --verbose "diamond blastp --query {}  --out {}pl_diammond_.txt --db /home/ioannis.kampouris/three_years_CTEXT/diamond_the/plantdb.dmnd --id 90 --query-cover 50  -k 1 -e 0.000000001  -p 2"
+
+***Now in R***
+Load the MAGs
+First the quality plots and then the classification of archaea
+or the classification of bacteria
+```{r}
+quality_MAGs=read.delim( 
+"drep_output_directory_incomplete/checked_genomes/quality_report.tsv"
+)
+quality_MAGs$user_genome=quality_MAGs$Name
+bacterial_taxonomy=read.delim(
+"drep_output_directory_incomplete/classified_MAGs_MS5/classify/gtdbtk.bac120.summary.tsv"
+)
+
+archeal_taxonomy=read.delim(
+"drep_output_directory_incomplete/classified_MAGs_MS5/classify/gtdbtk.ar53.summary.tsv",
+)
+both_taxon= rbind(bacterial_taxonomy, archeal_taxonomy) %>%full_join(
+quality_MAGs  
+)
+plot1=ggplot(both_taxon, 
+aes(fill= (Completeness) , y=classification, x=Contamination))+
+  geom_point(size=6, shape=21)+scale_fill_distiller(
+    palette = "RdBu", direction = 1, name="Completeness (%)"
+  )+theme_bw()+ylab("")+
+  xlab("Contamination (%)")
+
+```
+
+***Plot the results***
+```{r}
+png(filename = "status_derp_mags1.png", width = 1000)
+print(plot1)
+dev.off()
+list1= list.files(pattern = "diammond_.txt", path =  "drep_output_directory_incomplete/dereplicated_genomes/",recursive =T)
+
+```
+***Merge the annotations of PlaBASE***
+```{r}
+path="drep_output_directory_incomplete/dereplicated_genomes/"
+list2=list()
+all_genomes=function(x) {
+path_to_genome <- paste0(path, "/",list1[x])
+file1= read.delim(path_to_genome, header = F)%>%mutate(G1=paste0(unique(list1[x])))
+return(file1)
+}
+results  =lapply(1:length(list1), function(x)  all_genomes(x))
+results2=do.call("rbind",results)%>%separate(., col=G1, into=c("Bin","PR"),
+                                             sep="_out/")
+
+results2$Id = gsub("_.*","", results2$V2)
+beneficialtraits1=read.csv("diamond_the/plabase_map_info.csv",
+                           header = T)
+
+beneficialtraits2=full_join(results2, beneficialtraits1)%>%
+na.omit()  
+
+beneficialtraits2$user_genome=gsub("_out","", beneficialtraits2$Bin)
+beneficialtraits3=full_join(beneficialtraits2,both_taxon )
+
+write_csv(beneficialtraits3, 
+"drep_output_directory_incomplete/dereplicated_genomes/MAGBMtraits.csv")
+beneficialtraits4=dcast(beneficialtraits3,user_genome+classification~.,
+value.var = "user_genome", length )
+```
+

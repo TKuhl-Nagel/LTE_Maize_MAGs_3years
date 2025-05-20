@@ -1,0 +1,39 @@
+---
+title: "Alpha and Beta Diversity, MS5"
+author: "Ioannis D. Kampouris"
+date: "2025-02-11"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Load the packages
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(ggpubr)
+library(stringi)
+library(tidyr)
+library(reshape2)
+library(vegan)
+library(parallel)
+
+```
+Load the metadata
+```{r}
+metadata1=read.csv("metadata1.csv")
+Nutrients=read_excel("Nutrients_20_21_22.xlsx")
+```
+
+Load the tables of Diversity
+```{r}
+Taxonomy=read.csv("ASV_Table_LTE_three_years.csv", row.names = "X")
+Taxonomy=Taxonomy[,c(1:7,ncol(Taxonomy))]
+rownames(Taxonomy)=Taxonomy$ASV
+Rarefied_Table1=read.csv(file = "3yearsRarefied_table.csv",row.names = "X")
+```

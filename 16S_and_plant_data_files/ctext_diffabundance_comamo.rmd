@@ -1,0 +1,78 @@
+---
+title: "Alpha and Beta Diversity, MS5"
+author: "Ioannis D. Kampouris"
+date: "2025-02-11"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Load the packages
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(ggpubr)
+library(stringi)
+library(tidyr)
+library(reshape2)
+library(vegan)
+library(parallel)
+```
+Load the metadata
+```{r}
+metadata1=read.csv("metadata1.csv")
+
+```
+
+Load the tables of Diversity
+```{r}
+Taxonomy=read.csv("ASV_Table_LTE_three_years.csv", row.names = "X")
+Taxonomy=Taxonomy[,c(1:7,ncol(Taxonomy))]
+rownames(Taxonomy)=Taxonomy$ASV
+Rarefied_Table1=read.csv(file = "3yearsRarefied_table.csv",row.names = "X")
+```
+
+First Compare the alpha Diversity metrics in Rhizosphere
+```{r}
+metadata_RH=filter(metadata1, Soil_Type=="RH")
+TaxonomyComa=filter(Taxonomy, ASV%in%c(colnames(Rarefied_Table1) 
+)&tax.Family=="Comamonadaceae"
+                      )
+```
+
+```{r}
+ASVcoma=cbind(metadata_RH,  Rarefied_Table1[metadata_RH$Sample, 
+c(TaxonomyComa$ASV), drop=F])
+ASVcoma$Sum=rowSums( ASVcoma[,5:ncol(ASVcoma)])
+
+ASVcomaplot=ggplot(ASVcoma, aes(x=as.factor( paste0("20", Year)),fill=BM,  y=100*(Sum)/19355))+
+ geom_boxplot()+
+  theme_bw() +
+  xlab("Year")+ ylab(expression(bold(paste("ASV Comamonadaceae RA%"))))+
+  
+  theme( axis.text.y = element_text( size=40, face = "bold", colour="black")) +
+  theme(axis.text.x = element_text(size = 40, face = "bold", colour="black")) +
+  theme(legend.text = element_text( size=40, face="bold", colour = "black")) + 
+  theme( axis.title.y = element_text( size=40, face = "bold", colour="black")) + 
+  theme(axis.title.x = element_text(size = 40, face = "bold", colour="black")) +
+  theme(legend.title =  element_text( size=40, face="bold", colour = "black"))+
+  theme(plot.title =  element_text( size=40, face="bold", colour = "black"))+
+  
+  theme( strip.text = element_text( size=40, face = "bold.italic", colour="black")) +
+  theme( strip.background = element_rect( fill="white", colour = "white")) +
+  theme(legend.position="right") + theme( axis.line = element_line(colour = "black", 
+                                                                   size = 1.5, linetype = "solid"))+ 
+  stat_compare_means(method = "wilcox.test", label = "p.signif",size=10, hide.ns = T)+
+    scale_fill_manual(name="",values=c( "#ff9900","#146eb4"))
+
+```
+
+
+
+
+
