@@ -1,0 +1,15 @@
+New name	Old name
+MAG01(Binatia)	Genome.15
+MAG02(Nitrososphaeraceae)	MS5ResultsCTExtC2020bin.002
+MAG03(Edaphocola)	MS5ResultsCTExtC2022bin.016
+MAG04(Rariglobus)	MS5Resultsall2bin.012
+MAG05(Binatia)	MS5Resultsall2bin.027
+MAG06(Nitrososphaeraceae)	S1SemiBin12.fa.gzround4pilon
+MAG07(Nitrososphaera)	S1SemiBin16.fa.gzround4pilon
+MAG08(Nitrososphaeraceae)	S1SemiBin26.fa.gzround4pilon
+MAG09(Lysobacter antibioticus)	S3SemiBin0.fa.gzround4pilon
+MAG10(Bacillus atrophaeus)	S4SemiBin0.fa.gzround4pilon
+MAG11(Nitrospira)	S4SemiBin1.fa.gzround4pilon
+MAG12(Nitrososphaeraceae)	S4SemiBin18.fa.gzround4pilon
+MAG13(Nitrososphaeraceae)	S4SemiBin19.fa.gzround4pilon
+MAG14(Binatia)	S4SemiBin2.fa.gzround4pilon

@@ -1,0 +1,33 @@
+CODE	Year	BENEFICIALS	Shoot_DW						
+1	20	Control 	338.7						
+2	20	Control 	305.1						
+3	20	Control 	314.4						
+4	20	Control 	278.1						
+1	20	BMc	432.7						
+2	20	BMc	433.1						
+3	20	BMc	423.8						
+4	20	BMc	420.1						
+1	21	Control 	355.6						
+2	21	Control 	370.8						
+3	21	Control 	366.0						
+4	21	Control 	336.4						
+1	21	BMc	344.4						
+2	21	BMc	471.0						
+3	21	BMc	387.9						
+4	21	BMc	451.0						
+1	22	Control 	131.2333333						
+2	22	Control 	105.8						
+3	22	Control 	90.56666667						
+4	22	Control 	108.4333333						
+1	22	BMc	88.73333333						
+2	22	BMc	119.9666667						
+3	22	BMc	99.23333333						
+4	22	BMc	115.1666667						
+									
+									
+									
+									
+									
+									
+									
+									

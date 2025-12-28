@@ -1,0 +1,25 @@
+Block	Tillage	Int	CODE	Year	SAMPLING_DAY	SAMPLING_LOCATION	SAMPLING_MATERIAL	PREVIOUS_CROP	CROP	BMc	Ca[g/kg]	Cu[mg/kg]	Fe[mg/kg]	K[g/kg]	Mg[g/kg]	Mn[mg/kg]	P[g/kg]	S[g/kg]	Zn[mg/kg]			
+1	CT	Extensive	1-1-ct-ext	20	15. Jul 20	central	Shoot	winter_wheat(WWII)	maize	Control	4.83	9.03	90.78	21.82	1.78	62.47	2.92	2.02	48.22			
+2	CT	Extensive	1-2-ct-ext	20	15. Jul 20	central	Shoot	winter_wheat(WWII)	maize	Control	5.36	8.32	84.02	21.82	1.87	60.82	2.69	1.92	38.28			
+3	CT	Extensive	1-3-ct-ext	20	15. Jul 20	central	Shoot	winter_wheat(WWII)	maize	Control	5.22	8.82	78.82	21.51	1.92	61.29	2.76	1.97	40.39			
+4	CT	Extensive	1-4-ct-ext	20	15. Jul 20	central	Shoot	winter_wheat(WWII)	maize	Control	4.58	8.95	86.33	23.21	1.80	51.71	2.53	1.90	33.88			
+1	CT	Extensive	1-1-ct-ext	20	15. Jul 20	central	Shoot	winter_wheat(WWII)	maize	BMc	4.92	8.24	92.05	22.75	1.87	60.50	3.04	2.12	43.17			
+2	CT	Extensive	1-2-ct-ext	20	15. Jul 20	central	Shoot	winter_wheat(WWII)	maize	BMc	5.16	8.03	96.91	21.39	1.82	66.32	2.73	1.99	41.00			
+3	CT	Extensive	1-3-ct-ext	20	15. Jul 20	central	Shoot	winter_wheat(WWII)	maize	BMc	5.39	9.12	93.17	21.51	1.80	66.49	2.78	2.23	44.55			
+4	CT	Extensive	1-4-ct-ext	20	15. Jul 20	central	Shoot	winter_wheat(WWII)	maize	BMc	4.64	8.26	102.46	24.65	1.90	53.31	2.76	2.17	34.44			
+1	CT	Extensive		21	07.26.21		Shoot	winter_wheat(WWII)	maize	Control	5.91	9.43	104	17.2	1.25	85	2.44	1.56	40			
+2	CT	Extensive		21	07.27.21		Shoot	winter_wheat(WWII)	maize	Control	6.67	8.75	105	18.2	1.41	88	2.56	1.65	39			
+3	CT	Extensive		21	07.28.21		Shoot	winter_wheat(WWII)	maize	Control	6.63	8.14	99	18.1	1.4	100	2.5	1.66	44			
+4	CT	Extensive		21	07.29.21		Shoot	winter_wheat(WWII)	maize	Control	6.08	7.56	93	16.9	1.3	87	2.46	1.54	42			
+1	CT	Extensive		21	08.03.21		Shoot	winter_wheat(WWII)	maize	BMc	5.7	7.88	88	17.3	1.28	82	2.45	1.59	37			
+2	CT	Extensive		21	08.04.21		Shoot	winter_wheat(WWII)	maize	BMc	6.65	8.22	102	18.2	1.42	89	2.57	1.83	41			
+3	CT	Extensive		21	08.05.21		Shoot	winter_wheat(WWII)	maize	BMc	7.05	8.19	102	19.4	1.39	90	2.64	1.72	40			
+4	CT	Extensive		21	08.06.21		Shoot	winter_wheat(WWII)	maize	BMc	6.79	8.66	98	18.7	1.42	87	2.65	1.85	42			
+1	CT	Extensive	1-1-ct-ext	22		central	Shoot	winter_wheat(WWII)	maize	Control	6.389694092	8.090041572	73.10030578	17.78300299	1.765876108	31.22418917	2.340504664	1.990477135	51.05304748			
+2	CT	Extensive	1-2-ct-ext	22		central	Shoot	winter_wheat(WWII)	maize	Control	4.823769388	5.559226141	60.10512226	19.7044172	1.564419247	25.40881493	2.123566291	1.694684799	47.40969807			
+3	CT	Extensive	1-3-ct-ext	22		central	Shoot	winter_wheat(WWII)	maize	Control	4.737172618	6.865494678	64.44195302	20.3999729	1.355196931	28.33628194	2.492720572	1.999853277	47.09002386			
+4	CT	Extensive	1-4-ct-ext	22		central	Shoot	winter_wheat(WWII)	maize	Control	5.661847826	7.566889632	80.95317726	18.49576087	1.242884615	32.64214047	2.333963211	2.005727425	52.87625418			
+1	CT	Extensive	1-1-ct-ext	22		central	Shoot	winter_wheat(WWII)	maize	BMc	5.668737946	6.151154429	69.8055698	19.54282584	1.638383827	32.0411687	2.089236508	1.706483952	49.76267587			
+2	CT	Extensive	1-2-ct-ext	22		central	Shoot	winter_wheat(WWII)	maize	BMc	4.773580453	6.021071856	68.87538448	19.49868517	1.50319912	27.40329161	2.102696461	1.658913512	41.89251538			
+3	CT	Extensive	1-3-ct-ext	22		central	Shoot	winter_wheat(WWII)	maize	BMc	4.291694916	5.690080063	63.97133006	19.17320865	1.414619123	23.86147492	2.312047448	1.769411098	48.6731766			
+4	CT	Extensive	1-4-ct-ext	22		central	Shoot	winter_wheat(WWII)	maize	BMc	4.6208636	6.714754134	69.81455893	20.05005138	1.158333114	30.2301838	2.28942158	1.796344036	47.84938808			
