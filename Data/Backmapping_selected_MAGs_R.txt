@@ -1,0 +1,11 @@
+Gene	Total	Bacillus atrophaeus	Lysobacter antibioticus
+baeG	57	57	0
+baeN	432	427	0
+dppC1	87	87	0
+fenC	164	81	0
+fenD	62	61	0
+ispC	2434	53	1450
+ituB	86	85	0
+pyrDI	31	31	0
+srfAA	436	136	15
+srfAC	153	146	0
