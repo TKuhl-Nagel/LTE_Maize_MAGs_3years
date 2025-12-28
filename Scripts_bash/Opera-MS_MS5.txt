@@ -1,0 +1,241 @@
+#new conda environment:
+conda activate opera-ms
+
+#test file run
+cd test_files
+perl ../OPERA-MS.pl \
+    --contig-file contigs.fasta \
+    --short-read1 R1.fastq.gz \
+    --short-read2 R2.fastq.gz \
+    --long-read long_read.fastq \
+    --no-ref-clustering \
+    --out-dir RESULTS 2> log.err
+
+perl ../OPERA-MS.pl --contig-file contigs.fasta --short-read1 R1.fastq.gz --short-read2 R2.fastq.gz --long-read long_read.fastq --no-ref-clustering --out-dir RESULTS 2> log.err
+
+#########################
+#run with default settings and subsample (Nanopore NP1 and Illumina CT-Ext-C 1-4 F&R) for testing
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl \
+    --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTExtC_forward.fastq.gz \
+    --short-read2 home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTExtC_reverse.fastq.gz \
+    --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP1_filt.fastq \
+    --no-ref-clustering \
+    --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results
+
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTExtC_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTExtC_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP1_filt.fastq --no-ref-clustering --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results
+
+#concatenate data
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTExtC_forward.fastq.gz
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTExtC_reverse.fastq.gz
+
+#check opera-ms-utils depndencies
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py check-dependency
+
+#Binning mit MetaBat2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results/opera-ms-utils.config 
+#Binning of polished contigs with MetaBat2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results/opera-ms-utils2.config 
+
+#Install MaxBin2
+conda install -c bioconda maxbin2
+ln -sf $(dirname $(readlink -f `which run_MaxBin.pl`)) /home/ubuntu/Desktop/space/OPERA-MS/tools_opera_ms/maxbin2
+conda list maxbin2
+#nano /home/ubuntu/miniconda3/envs/metagenome/maxbin2/settings
+#05.08.2024 new conda environment metagenome2
+
+#Binning mit MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results/opera-ms-utils.config --binner maxbin2 
+#Binning of polished contigs mit MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results/opera-ms-utils2.config --binner maxbin2 
+
+#Install checkm
+conda install -c bioconda checkm-genome
+ln -sf $(readlink -f `which checkm`) /home/ubuntu/Desktop/space/OPERA-MS/tools_opera_ms/
+checkm data setRoot /home/ubuntu/miniconda3/envs/metagenome/checkm_data
+#05.08.2024 new conda environment metagenome2
+checkm data setRoot /home/ubuntu/miniconda3/envs/metagenome2/checkm_data
+
+#Bin evaluation with checkM
+#MetaBat2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results/opera-ms-utils.config
+--> 1 high, no medium, 26 bins
+#MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results/opera-ms-utils.config --binner maxbin2
+--> 1 high, 5 medium, 15 bins
+
+#Polished contigs: Bin evaluation with checkM
+#MetaBat2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results/opera-ms-utils2.config
+# polished contigs hatten 2 bins mehr (16, statt 14 bins), aber auch nur low quality, high und medium waren genauso wie vorher
+
+#MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results/opera-ms-utils2.config --binner maxbin2
+# kein Unterschied
+
+############################################ Full dataset ###############################
+#Renamed preassembled contigs contig file (to contigs.fasta)
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --contig-file /home/ubuntu/Desktop/space/Data_MS5/Pre_assembled_contigs/contigs.fasta --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CT202122_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CT202122_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/Nanopore_filt.fastq --no-ref-clustering --no-polishing --num-processors 16 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_all2
+--> finished successfully
+
+#Binning mit MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_all2/opera-ms-utils.config --binner maxbin2 --thread 8
+--> 84 bins
+
+#Bin evaluation 
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_all2/opera-ms-utils.config --binner maxbin2
+--> 1 high quality, 4 medium quality
+##############################################################
+#New approach: separating files into 3 smaller datasets (randomly mixed to reduce year bias)
+1) CTExtC2020 + CTExtBMc2021
+2) CTExtC2021 + CTExtBMc2022
+3) CTExtC2022 + CTExtBMc2020
+
+#concatenate datasets
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2020BMc2021/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2020CTBMc2021_forward.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2020BMc2021/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2020CTBMc2021_reverse.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2021BMc2022/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2021CTBMc2022_forward.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2021BMc2022/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2021CTBMc2022_reverse.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2022BMc2020/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2022CTBMc2020_forward.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2022BMc2020/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2022CTBMc2020_reverse.fastq.gz
+
+#Long reads
+1) NP1 + NP5
+2) NP2 + NP6
+3) NP3 + NP4
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP1_5/*filt.fastq > /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP1_5_filt.fastq
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP2_6/*filt.fastq > /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP2_6_filt.fastq
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP3_4/*filt.fastq > /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP3_4_filt.fastq
+
+#Small datasets: no reference clustering, 16 CPUs
+1) CTExtC2020 + CTExtBMc2021
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2020CTBMc2021_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2020CTBMc2021_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP1_5_filt.fastq --no-ref-clustering --num-processors 16 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020BMc2021
+
+2) CTExtC2021 + CTExtBMc2022
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2021CTBMc2022_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2021CTBMc2022_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP2_6_filt.fastq --no-ref-clustering --num-processors 16 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2021BMc2022
+
+3) CTExtC2022 + CTExtBMc2020
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2022CTBMc2020_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2022CTBMc2020_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP3_4_filt.fastq --no-ref-clustering --num-processors 16 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2022BMc2020
+
+#Binning of subsets
+1)CTExtC2020BMc2021
+#Metabat2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020BMc2021/opera-ms-utils.config 
+#Bin evaluation
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020BMc2021/opera-ms-utils.config
+--> 30 bins, 1 high, 4 medium
+#MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020BMc2021/opera-ms-utils.config --binner maxbin2
+#Bin evaluation
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020BMc2021/opera-ms-utils.config --binner maxbin2
+--> 50 bins, 0 high, 2 medium
+
+2)CTExtC2021BMc2022
+#Metabat2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2021BMc2022/opera-ms-utils.config 
+#Bin evaluation
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2021BMc2022/opera-ms-utils.config
+--> 1 high, 5 medium, 33 bins
+#MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2021BMc2022/opera-ms-utils.config --binner maxbin2
+#Bin evaluation
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2021BMc2022/opera-ms-utils.config --binner maxbin2
+--> 59 bins, 0 high, 0 medium
+
+3)CTExtC2022BMc2020
+#Metabat2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2022BMc2020/opera-ms-utils.config 
+#Bin evaluation
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2022BMc2020/opera-ms-utils.config
+--> 30 bins, 4 high, 5 medium
+#MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2022BMc2020/opera-ms-utils.config --binner maxbin2 --t 8
+#Bin evaluation
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2022BMc2020/opera-ms-utils.config --binner maxbin2
+--> 52 bins, 0 high, 2 medium quality
+
+#########
+# concatenate contigs files
+cat /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020BMc2021/contigs.fasta /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2021BMc2022/contigs.fasta /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2022BMc2020/contigs.fasta > /home/ubuntu/Desktop/space/MS5_Opera-MS/CT202122_contigs_all.fasta
+
+#Binning MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/CT202122_all/CT202122_all_opera-ms-utils.config --binner maxbin2
+#Bin evaluation with checkM (MaxBin2)
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/CT202122_all/CT202122_all_opera-ms-utils.config --binner maxbin2
+-> 220 bins detected, 0 high, 1 medium
+
+################################
+#New approach: separating files into 6 small datasets and running single assemblies
+1) CTExtC2020 
+2) CTExtC2021 
+3) CTExtC2022
+4) CTExtBMc2020 
+5) CTExtBMc2021 
+6) CTExtBMc2022
+
+#concatenate datasets
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2020/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2020_forward.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2020/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2020_reverse.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2021/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2021_forward.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2021/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2021_reverse.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2022/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2022_forward.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/C2022/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2022_reverse.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/BMc2020/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2020_forward.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/BMc2020/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2020_reverse.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/BMc2021/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2021_forward.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/BMc2021/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2021_reverse.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/BMc2022/*forward.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2022_forward.fastq.gz
+
+cat /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122_all/BMc2022/*reverse.fastqsanger.gz > /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2022_reverse.fastq.gz
+
+# Assembly
+
+1) CTExtC2020
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2020_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2020_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP1_5/NP1_filt.fastq --no-ref-clustering --num-processors 8 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020
+
+2) CTExtC2021
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2021_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2021_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP2_6/NP2_filt.fastq --no-ref-clustering --num-processors 16 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2021
+
+3) CTExtC2022
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2022_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTC2022_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP3_4/NP3_filt.fastq --no-ref-clustering --num-processors 16 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2022
+
+4) CTExtBMc2020
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2020_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2020_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP3_4/NP4_filt.fastq --no-ref-clustering --num-processors 16 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtBMc2020
+
+5) CTExtBMc2021
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2021_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2021_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP1_5/NP5_filt.fastq --no-ref-clustering --num-processors 16 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtBMc2021
+
+6) CTExtBMc2022
+perl /home/ubuntu/Desktop/space/OPERA-MS/OPERA-MS.pl --short-read1 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2022_forward.fastq.gz --short-read2 /home/ubuntu/Desktop/space/Data_MS5/Illumina_CT202122/CTBMc2022_reverse.fastq.gz --long-read /home/ubuntu/Desktop/space/Data_MS5/Nanopore_CT202122/NP2_6/NP6_filt.fastq --no-ref-clustering --num-processors 16 --out-dir /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtBMc2022
+
+##### Binning
+1) CTExtC2020
+#Metabat2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020/opera-ms-utils.config 
+#Bin evaluation
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020/opera-ms-utils.config
+-->  bins,  high,  medium
+#MaxBin2
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py binning --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020/opera-ms-utils.config --binner maxbin2 --t 8
+#Bin evaluation
+python /home/ubuntu/Desktop/space/OPERA-MS/src_utils/OPERA-MS-UTILS.py bin-evaluation --config /home/ubuntu/Desktop/space/MS5_Opera-MS/MS5_Results_CTExtC2020/opera-ms-utils.config --binner maxbin2
+--> bins, high, medium quality
+
+

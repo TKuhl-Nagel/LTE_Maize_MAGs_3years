@@ -1,0 +1,9 @@
+Filtering Strategy
+Exclude non-primary/unmapped reads
+Use SAM flags to remove secondary alignments (-F 256) and unmapped reads (-F 4).
+
+Basic MAPQ filtering
+-q 1 removes reads with =1 MAPQ (=79% alignment error probability).
+
+Remove alternative/split alignments
+Exclude reads with BWA's XA:Z (alternative hits) and SA:Z (split alignments) tags.
