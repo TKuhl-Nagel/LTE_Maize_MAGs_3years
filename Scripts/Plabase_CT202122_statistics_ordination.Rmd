@@ -1,0 +1,207 @@
+---
+title: "CT202122_statistics_ordination"
+author: "Theresa Kuhl-Nagel"
+date: "2024-06-24"
+output: html_document
+---
+```{r}
+library(agricolae)
+library(vegan)
+#install.packages("BiocManager")
+library(RColorBrewer)
+library(ggplot2)
+library(ellipse)
+library(writexl)
+```
+
+Load data
+```{r}
+CDB <- read.csv("~/Data/CTExt2022122_bacteria_Plabase_anno_sum.csv", row.names = 1)
+dim(CDB)
+head(CDB)
+
+metadat <- read.table("~/Data/Metadata_CTExt202122.txt", header=T, sep="\t", dec=".") 
+head(metadat)
+```
+
+#switch rows and columns
+```{r}
+tCDB <- t(CDB) # samples in rows
+dim(tCDB)
+head(tCDB)
+```
+
+#Unfiltered data and relative abundance; log10 transformed
+Calculate relative abundance based on bacterial reads with hit in Plabase
+```{r}
+#samples in rows!
+rowsum_CDB <- rowSums(tCDB)
+CDB_rela <- tCDB/rowsum_CDB   
+View(CDB_rela) 
+
+#tranformation
+CDB_rela_trafo <- decostand(CDB_rela, method = "log", logbase = 10)
+View(CDB_rela_trafo)
+
+```
+
+#PERMANOVA on relative abundance 
+```{r}
+CDB_dist <-vegdist(CDB_rela_trafo, method="bray") 
+perm.ado<-adonis2(formula=CDB_dist ~ Beneficials * Year, data=metadat, by="terms", method="Bray", permutation=10000) 
+perm.ado 
+```
+
+#Separate years
+```{r}
+CDB2020 <- CDB_rela_trafo[c(1:8), ]
+head(CDB2020)
+dim(CDB2020)
+
+CDB2021 <- CDB_rela_trafo[c(9:16), ]
+head(CDB2021)
+dim(CDB2021)
+
+CDB2022 <- CDB_rela_trafo[c(17:24), ]
+head(CDB2022)
+dim(CDB2022)
+
+meta2020 <- metadat[c(1:8), ]
+meta2021<- metadat[c(9:16), ]
+meta2022<- metadat[c(17:24), ]
+```
+
+#CDB2020: PERMANOVA on relative abundance 
+```{r}
+CDB_dist2020 <-vegdist(CDB2020, method="bray") 
+perm.ado<-adonis2(formula=CDB_dist2020~Beneficials, data=meta2020, by = "terms", method="Bray", permutation=10000) 
+perm.ado
+```
+
+#CDB2021: PERMANOVA on relative abundance 
+```{r}
+CDB_dist2021 <-vegdist(CDB2021, method="bray") 
+perm.ado<-adonis2(formula=CDB_dist2021~Beneficials, data=meta2021, by = "terms", method="Bray", permutation=10000) 
+perm.ado
+```
+
+#CDB2022: PERMANOVA on relative abundance 
+```{r}
+CDB_dist2022 <-vegdist(CDB2022, method="bray") 
+perm.ado<-adonis2(formula=CDB_dist2022~Beneficials, data=meta2022, by = "terms", method="Bray", permutation=10000) 
+perm.ado
+```
+######################## Run plots as ggplot
+
+2020 
+```{r}
+dist1=vegdist(CDB2020, method = "bray")
+dist1b=cmdscale(dist1, k=2, eig=T)
+dist1c=scores(dist1b, display = "sites")
+dist1d=cbind(dist1c[meta2020$Sample,], meta2020)
+```
+
+```{r}
+p1= ggplot(dist1d,aes(x=Dim1, y=Dim2, fill=(Beneficials) ))+
+  geom_point(shape=21,  size=6)+
+  #scale_shape_manual(name="Sampling Year",values = c(21,22,23))+
+   theme_bw()+
+  theme( strip.background = element_rect( fill="white", colour="white")) +
+  theme( strip.text =  element_text( colour="black", face="bold.italic", size=20)) +
+  #ggtitle(paste( "2020"))+
+  scale_fill_manual(name="",values=c( "#ff9900","#146eb4"))+
+
+  theme(axis.text = element_text(size = 10, face = "bold", colour="black")) +
+  theme(legend.text = element_text( size=10, face="bold", colour = "black")) + 
+      theme(plot.title = element_text( size=10, face="bold", colour = "black")) + 
+
+    theme(legend.title = element_text( size=10, face="bold", colour = "black")) + 
+  
+  theme(legend.position = "right",
+        axis.title.y = element_text( size=10, face = "bold", colour="black")) + 
+  theme(axis.title.x = element_text(size = 10, face = "bold", colour="black"))+
+  xlab(paste0("MDS1[",round((100*dist1b$eig[1]/sum(dist1b$eig)),2),"%]"))+
+  ylab(paste0("MDS2[",round((100*dist1b$eig[2]/sum(dist1b$eig)),2),"%]"))
+
+p1
+```
+
+2021
+```{r}
+dist1=vegdist(CDB2021, method = "bray")
+dist1b=cmdscale(dist1, k=2, eig=T)
+dist1c=scores(dist1b, display = "sites")
+dist1d=cbind(dist1c[meta2021$Sample,], meta2021)
+```
+
+```{r}
+p2= ggplot(dist1d,aes(x=Dim1, y=Dim2, fill=(Beneficials) ))+
+  geom_point(shape=21,  size=6)+
+  #scale_shape_manual(name="Sampling Year",values = c(21,22,23))+
+   theme_bw()+
+  theme( strip.background = element_rect( fill="white", colour="white")) +
+  theme( strip.text =  element_text( colour="black", face="bold.italic", size=25)) +
+  #ggtitle(paste( "2021"))+
+  scale_fill_manual(name="",values=c( "#ff9900","#146eb4"))+
+
+  theme(axis.text = element_text(size = 10, face = "bold", colour="black")) +
+  theme(legend.text = element_text( size=10, face="bold", colour = "black")) + 
+      theme(plot.title = element_text( size=10, face="bold", colour = "black")) + 
+
+    theme(legend.title = element_text( size=10, face="bold", colour = "black")) + 
+  
+  theme(legend.position = "right",
+        axis.title.y = element_text( size=10, face = "bold", colour="black")) + 
+  theme(axis.title.x = element_text(size = 10, face = "bold", colour="black"))+
+  xlab(paste0("MDS1[",round((100*dist1b$eig[1]/sum(dist1b$eig)),2),"%]"))+
+  ylab(paste0("MDS2[",round((100*dist1b$eig[2]/sum(dist1b$eig)),2),"%]"))
+
+p2
+```
+2022
+```{r}
+dist1=vegdist(CDB2022, method = "bray")
+dist1b=cmdscale(dist1, k=2, eig=T)
+dist1c=scores(dist1b, display = "sites")
+dist1d=cbind(dist1c[meta2022$Sample,], meta2022)
+```
+
+```{r}
+p3= ggplot(dist1d,aes(x=Dim1, y=Dim2, fill=(Beneficials) ))+
+  geom_point(shape=21,  size=6)+
+  #scale_shape_manual(name="Sampling Year",values = c(21,22,23))+
+   theme_bw()+
+  theme( strip.background = element_rect( fill="white", colour="white")) +
+  theme( strip.text =  element_text( colour="black", face="bold.italic", size=25)) +
+  #ggtitle(paste( "2022"))+
+  scale_fill_manual(name="",values=c( "#ff9900","#146eb4"))+
+
+  theme(axis.text = element_text(size = 10, face = "bold", colour="black")) +
+  theme(legend.text = element_text( size=10, face="bold", colour = "black")) + 
+      theme(plot.title = element_text( size=10, face="bold", colour = "black")) + 
+
+    theme(legend.title = element_text( size=10, face="bold", colour = "black")) + 
+  
+  theme(legend.position = "right",
+        axis.title.y = element_text( size=10, face = "bold", colour="black")) + 
+  theme(axis.title.x = element_text(size = 10, face = "bold", colour="black"))+
+  xlab(paste0("MDS1[",round((100*dist1b$eig[1]/sum(dist1b$eig)),2),"%]"))+
+  ylab(paste0("MDS2[",round((100*dist1b$eig[2]/sum(dist1b$eig)),2),"%]"))
+
+p3
+```
+
+Combine plots
+```{r, fig.width=12, fig.height=6}
+
+combined_plot <- ggarrange(p1, p2, p3,p4,p5,p6,
+          ncol = 3, nrow = 2,
+          align = "v",        
+          common.legend = FALSE) 
+
+print(combined_plot)
+```
+
+
+
+

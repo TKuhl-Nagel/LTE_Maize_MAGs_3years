@@ -1,0 +1,177 @@
+---
+title: "Generate_count_matrix_MS5_PlaBase"
+author: "Theresa Kuhl-Nagel"
+date: "2025-02-04"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(readxl)
+```
+
+Countmatrix csv file from BWA backmapping of reads on MegaHit contigs
+Load data
+```{r}
+#Count matrix
+counts <- read.csv("~/Data/CTExt2022122_count_matrix.csv")
+dim(counts)
+head(counts)
+View(counts)
+
+#Output Plabase
+Plabase <- read.table("~/Data/pl_diamond_Nucleotide_Contigs_MEGAHIT_prodigal_cd-hit_on_CT202122_header.txt", sep="\t", dec=".",  header=TRUE)
+dim(Plabase)
+head(Plabase)
+```
+
+```{r}
+# Merge with count matrix
+counts_Plabase <- full_join(Plabase, counts,  by = "reference")
+head(counts_Plabase)
+dim(counts_Plabase)
+View(counts_Plabase)
+```
+
+#Add results from eggNOGDB (edited in excel with only contig name, eggNOG_OGs, Description, KO number (KEGG_ko))
+Load data
+```{r}
+#Output eggNOG DB
+eggNOGDB <- read_excel("~/Data/Nucleotide_Contigs_CT202122_eggNOGmapper_annotations.xlsx")
+head(eggNOGDB)
+dim(eggNOGDB)
+
+eggNOGDB <- as.data.frame(eggNOGDB)
+head(eggNOGDB)
+```
+```{r}
+# Merge with count matrix and Plabase
+CCE <- full_join(eggNOGDB,counts_Plabase,  by = "reference")
+head(CCE)
+dim(CCE)
+#625411 hits
+```
+
+
+#Extract bacterial contigs
+
+```{r}
+bacteria_df <- CCE[grepl("\\|[^|]*Bacteria", CCE$tax), ]
+bacteria_df
+dim(bacteria_df)
+#82162 hits
+
+archaea_df <- CCE[grepl("\\|[^|]*Archaea", CCE$tax), ]
+archaea_df
+#1329 hits
+
+fungi_df <- CCE[grepl("\\|[^|]*Fungi", CCE$tax), ]
+fungi_df
+#17 hits
+
+eukaryota_df<- CCE[grepl("\\|[^|]*Eukaryota", CCE$tax), ]
+eukaryota_df
+#320 hits
+
+virus_df <- CCE[grepl("\\|[^|]*Virus", CCE$tax), ]
+virus_df
+#8 hits
+```
+
+#Filter for hit in Plabase (independent from KO number)
+```{r}
+bacteria_Plabase_df <- bacteria_df[bacteria_df$Subject != "" &!is.na(bacteria_df$Subject), ]
+bacteria_Plabase_df 
+#13030 hits 
+
+# Export the Plabase count matrix for bacteria to a CSV file
+output_file <- "~/Data/CTExt2022122_bacteria_Plabase.csv"
+write.csv(bacteria_Plabase_df, output_file, row.names = FALSE)
+```
+
+#Sum up rows with same hit in Plabase
+Load data
+```{r}
+custom_bacs <- read.csv("~/Data/CTExt2022122_bacteria_Plabase.csv")
+dim(custom_bacs)
+head(custom_bacs)
+```
+```{r}
+# Drop specific columns
+columns_to_drop <- c("reference", "tax", "description", "KO","percent","length", "mismatch", "gapopen", "qstart","qend","sstart", "send", "evalue", "bitscore")
+custom_bacs_minor <- custom_bacs[, !(names(custom_bacs) %in% columns_to_drop)]
+
+# Ensure all sample columns are numeric
+sample_columns <- names(custom_bacs_minor)[2:ncol(custom_bacs_minor)]  # Assuming the first column is Subject
+custom_bacs_minor[sample_columns] <- lapply(custom_bacs_minor[sample_columns], as.numeric)
+
+# Group by Subject and summarize using dplyr functions
+custom_bacs_minor_summarized_df <- custom_bacs_minor %>%
+  dplyr::group_by(Subject) %>%
+  dplyr::summarize(across(all_of(sample_columns), \(x) sum(x, na.rm = TRUE)), .groups = 'drop')
+
+# Export the customDB count matrix with summed rows for bacteria to a CSV file
+output_file <- "~/Data/CTExt2022122_bacteria_Plabase_sum.csv"
+write.csv(custom_bacs_minor_summarized_df, output_file, row.names = FALSE)
+```
+
+#Add annotation
+```{r}
+custom_bacs <- read.csv("~/Data/CTExt2022122_bacteria_Plabase.csv")
+dim(custom_bacs)
+head(custom_bacs)
+
+anno <- read.csv("~/Data/plabase_map_info.csv")
+dim(anno)
+head(anno) 
+```
+```{r}
+# Drop specific columns
+columns_to_drop <- c("reference", "tax", "description", "KO", "percent", "length", "mismatch", "gapopen","qstart", "qend", "sstart", "send","evalue", "bitscore")
+custom_bacs_minor <- custom_bacs[, !(names(custom_bacs) %in% columns_to_drop)]
+
+#Remove suffix
+custom_bacs_minor$Subject <- gsub('_.*', '', as.character(custom_bacs_minor$Subject))
+custom_bacs_minor$Subject
+head(custom_bacs_minor)
+
+# Ensure all sample columns are numeric
+sample_columns <- names(custom_bacs_minor)[2:ncol(custom_bacs_minor)]  # Assuming the first column is Subject
+custom_bacs_minor[sample_columns] <- lapply(custom_bacs_minor[sample_columns], as.numeric)
+
+# Group by Subject and summarize using dplyr functions
+custom_bacs_minor_summarized_df <- custom_bacs_minor %>%
+  dplyr::group_by(Subject) %>%
+  dplyr::summarize(across(all_of(sample_columns), \(x) sum(x, na.rm = TRUE)), .groups = 'drop')
+head(custom_bacs_minor_summarized_df)
+dim(custom_bacs_minor_summarized_df)
+#2298 hits
+```
+
+```{r}
+# Merge custom_bacs with annotation (only hits fro anno with hits in custom_bacs_minor are) 
+CCE <- left_join(custom_bacs_minor_summarized_df,anno,  by = "Subject")
+head(CCE)
+dim(CCE)
+#2298
+
+#drop columns 
+columns_to_drop <- c("Type", "Pfams","Subject")
+CCE_minor <- CCE[, !(names(CCE) %in% columns_to_drop)]
+head(CCE_minor)
+
+# Group by Subject and summarize using dplyr functions
+CCE_minor_summarized_df <- CCE_minor %>%
+  dplyr::group_by(Factor) %>%
+  dplyr::summarize(across(all_of(sample_columns), \(x) sum(x, na.rm = TRUE)), .groups = 'drop')
+head(CCE_minor_summarized_df)
+dim(CCE_minor_summarized_df)
+#2268 hits
+
+
+# Export the count matrix with annotation and summed rows for bacteria to a CSV file
+output_file <- "~/Data/CTExt2022122_bacteria_Plabase_anno_sum.csv"
+write.csv(CCE_minor_summarized_df, output_file, row.names = FALSE)
+```
+
+

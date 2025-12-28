@@ -1,0 +1,511 @@
+---
+title: "MAG"
+author: "Theresa Kuhl-Nagel"
+date: "2025-03-22"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(patchwork)
+library(rcompanion)
+library(agricolae)
+MAG2 <- read.table("~/Data/Mapping_matrix_all2_reduced.txt", header=T, sep="\t", dec=".") 
+head(MAG2)
+
+new_names <- read.table("~/Data/New_names.txt", header=T, sep="\t", dec=".") 
+```
+
+Calculate relative abundance based on bacterial reads with hit in MAGs
+```{r}
+#separate metadata
+colnames(MAG2)
+meta_data <- MAG2[, c("Year", "Treatment", "Replicate")]
+rest_data <- MAG2[, !colnames(MAG2) %in% c("Year", "Treatment", "Replicate")]
+# View the results
+print(meta_data)
+print(rest_data)
+
+#transpose rest_data
+trest_data <- t(rest_data)
+trest_data
+
+#relative abundance
+rowsum_MAG <- rowSums(trest_data)
+rowsum_MAG
+MAG_rela <- trest_data/rowsum_MAG  
+View(MAG_rela) 
+
+#transpose back
+tMAG_rela <- t(MAG_rela)
+tMAG_rela
+
+#add meta_data again
+MAG_relabu_final <- cbind(tMAG_rela, meta_data)
+View(MAG_relabu_final)
+MAG_relabu_final
+```
+Updated with 3 MAGs out of quality criteria removed 
+```{r}
+#reshape in long format
+# Specify genome column names
+genome_columns <- c("S4SemiBin2.fa.gzround4pilon",
+"S4SemiBin19.fa.gzround4pilon",	"S4SemiBin18.fa.gzround4pilon",	"S4SemiBin1.fa.gzround4pilon",	"S4SemiBin0.fa.gzround4pilon",	"S3SemiBin0.fa.gzround4pilon",	"S1SemiBin26.fa.gzround4pilon",	"S1SemiBin16.fa.gzround4pilon",	"S1SemiBin12.fa.gzround4pilon",	"MS5ResultsCTExtC2022bin.016",	"MS5ResultsCTExtC2020bin.002",	"MS5Resultsall2bin.027",	"MS5Resultsall2bin.012",	"Genome.15")
+
+# Select genome columns
+genome_data <- MAG_relabu_final[, genome_columns]
+
+library(tidyr)
+# Reshape genome columns into long format
+long_data <- MAG_relabu_final %>%
+  pivot_longer(
+    cols = all_of(genome_columns), # Select genome columns (columns 1–17)
+    names_to = "Genome",          # Name for the new column that identifies genomes
+    values_to = "Mapped_Reads"    # Name for the new column that contains mapped reads
+  )
+
+View(long_data)
+```
+
+```{r}
+#calculate standard deviation
+library(dplyr)
+
+long_data <- long_data %>%
+  group_by(Year, Genome, Treatment) %>%
+  mutate(
+    mean_reads = mean(Mapped_Reads),
+    sd_value = sd(Mapped_Reads)
+  ) %>%
+  ungroup()
+```
+
+
+```{r}
+# new names
+
+long_data <- long_data %>%
+  left_join(new_names, by = c("Genome"="Old.name"))
+```
+
+```{r}
+custom_colors <- c( "#ff9900","#146eb4")
+
+#change order to start with MAG01
+desired_order <- sort(unique(long_data$New.name))
+```
+
+```{r}
+#adapted labels
+myLabels2 <- c(
+  expression(paste("MAG14(", italic("Binatia"),")")),
+  expression(paste("MAG13(", italic("Nitrososphaeraceae"),")")),
+  expression(paste("MAG12(", italic("Nitrososphaeraceae"),")" )),
+  expression(paste("MAG11(", italic("Nitrospira"),")" )),
+  expression(paste("MAG10(", italic("Bacillus atrophaeus"),")" )),
+  expression(paste("MAG09(", italic("Lysobacter antibioticus"),")" )),
+  expression(paste("MAG08(", italic("Nitrososphaeraceae"),")")),
+  expression(paste("MAG07(", italic("Nitrososphaera"),")")),
+  expression(paste("MAG06(", italic("Nitrososphaeraceae"),")")),
+  expression(paste("MAG05(", italic("Binatia"),")")),
+  expression(paste("MAG04(", italic("Rariglobus"),")")),
+  expression(paste("MAG03(", italic("Edaphocola"),")" )),
+  expression(paste("MAG02(",italic("Nitrososphaeraceae"),")")),
+  expression(paste("MAG01(",italic("Binatia"),")",))
+)  
+
+```
+
+```{r}
+plot_list <- lapply(sort(unique(long_data$Year)), function(current_year) {
+  is_first_year <- current_year == min(long_data$Year)
+  
+  ggplot(subset(long_data, Year == current_year),
+         aes(y = New.name, x = mean_reads, fill = Treatment)) +
+    scale_fill_manual(values = custom_colors) +
+    geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.6) +
+    geom_errorbar(
+      aes(xmin = mean_reads - sd_value, 
+          xmax = mean_reads + sd_value),
+      position = position_dodge(width = 0.7),
+      width = 0.2,
+      color = "gray30",
+      linewidth = 0.3
+    ) +
+    scale_x_continuous(limits = c(0, 0.08), expand = expansion(mult = c(0, 0.1))) +
+    scale_y_discrete(limits = rev(desired_order), labels = myLabels2)+
+    labs(title = current_year,
+         #x = if(is_first_year) "Mapped Reads" else "",
+         #y = if(is_first_year) "" else "") +
+         x = "Relative abundance (%)" ,
+         y = if(is_first_year) "" else "") +
+    theme_minimal(base_size = 10) +
+    theme(
+      axis.text.y = if(is_first_year) element_text(size = 10) else element_blank(),
+      axis.title.x = element_text(size = 10),
+      axis.text.x = element_text(size = 10),
+      panel.grid.major.y = element_blank(),
+      plot.margin = margin(5, 5, 5, if(is_first_year) 5 else -10)
+    )
+})
+
+# Combine plots
+combined <- wrap_plots(plot_list, nrow = 1, guides = "collect") & 
+  theme(legend.position = "bottom", legend.title = element_blank(), legend.text = element_text(size = 10))
+
+combined
+```
+
+#2-way-ANOVA for significant differences
+```{r}
+#Load data in a different format
+MAG2 <- read.table("~/Data/Mapping_matrix_all2_reduced.txt", header=T, sep="\t", dec=".") 
+head(MAG2)
+str(MAG2)
+
+#Calculate relative abundance based on bacterial reads with hit in MAGs
+#separate metadata
+colnames(MAG2)
+meta_data <- MAG2[, c("Year", "Treatment", "Replicate")]
+rest_data <- MAG2[, !colnames(MAG2) %in% c("Year", "Treatment", "Replicate")]
+# View the results
+print(meta_data)
+print(rest_data)
+
+#transpose rest_data
+trest_data <- t(rest_data)
+trest_data
+
+#relative abundance
+rowsum_MAG <- rowSums(trest_data)
+rowsum_MAG
+MAG_rela <- trest_data/rowsum_MAG  
+View(MAG_rela) 
+
+#transpose back
+tMAG_rela <- t(MAG_rela)
+tMAG_rela
+
+#add meta_data again
+MAG_relabu_final <- cbind(tMAG_rela, meta_data)
+View(MAG_relabu_final)
+MAG_relabu_final
+
+#as factor
+MAG_relabu_final$Year <- as.factor(MAG_relabu_final$Year)
+MAG_relabu_final$Treatment <- as.factor(MAG_relabu_final$Treatment)
+MAG_relabu_final$Replicate <- as.factor(MAG_relabu_final$Replicate)
+
+```
+
+#S4SemiBin2.fa.gzround4pilon
+```{r}
+data_aov <- aov(S4SemiBin2.fa.gzround4pilon ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # not significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+
+#### Tukey HSD ####
+HSD.Test_data_aov <- HSD.test(data_aov,c("Treatment","Year"), group=TRUE,console=TRUE, main="Posthoc: Tukey")
+```
+Analysis of Variance Table
+
+Response: S4SemiBin2.fa.gzround4pilon
+               Df     Sum Sq    Mean Sq F value  Pr(>F)   
+Treatment       1 1.6435e+10 1.6435e+10  8.4314 0.00947 **
+Year            2 6.1587e+09 3.0793e+09  1.5797 0.23330   
+Treatment:Year  2 1.1610e+10 5.8052e+09  2.9781 0.07633 . 
+Residuals      18 3.5087e+10 1.9493e+09   
+
+BMc:2020	483844.8	a		
+BMc:2022	424901.0	ab		
+control:2021	420877.2	ab		
+BMc:2021	415595.7	ab		
+control:2020	380028.2	b		
+control:2022	365525.5	b
+
+#S4SemiBin19.fa.gzround4pilon
+```{r}
+data_aov <- aov(S4SemiBin19.fa.gzround4pilon ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # not significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # significant
+
+# data transformation
+Index =
+  transformTukey(MAG_relabu_final$S4SemiBin19.fa.gzround4pilon,
+                 plotit=FALSE)
+data_index <- cbind(MAG_relabu_final, Index)
+
+#neue ANOVA
+data_aov_index <- aov(Index ~Treatment*Year, data_index)
+anova(data_aov_index)
+shapiro.test(residuals(data_aov_index)) # not significant
+qqnorm(residuals(data_aov_index))
+leveneTest(data_aov_index) # not significant
+```
+not significant
+
+#S4SemiBin18.fa.gzround4pilon
+```{r}
+data_aov <- aov(S4SemiBin18.fa.gzround4pilon ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # not significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # significant
+```
+not significant
+
+#S4SemiBin1.fa.gzround4pilon
+```{r}
+data_aov <- aov(S4SemiBin1.fa.gzround4pilon ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # not significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+
+#### Tukey HSD ####
+HSD.Test_data_aov <- HSD.test(data_aov,c("Treatment","Year"), group=TRUE,console=TRUE, main="Posthoc: Tukey")
+```
+Analysis of Variance Table
+
+Response: S4SemiBin1.fa.gzround4pilon
+               Df     Sum Sq    Mean Sq F value   Pr(>F)   
+Treatment       1 6.7013e+09 6701294870 10.6257 0.004351 **
+Year            2 2.6915e+09 1345750648  2.1338 0.147359   
+Treatment:Year  2 4.3149e+09 2157443600  3.4209 0.055057 . 
+Residuals      18 1.1352e+10  630669761  
+
+BMc:2020	286198.0	a		
+BMc:2022	250224.5	ab		
+control:2021	246190.6	ab		
+BMc:2021	243370.0	ab		
+control:2020	223116.8	b		
+control:2022	209819.8	b
+
+#S4SemiBin0.fa.gzround4pilon
+```{r}
+data_aov <- aov(S4SemiBin0.fa.gzround4pilon ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # not significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+
+#### Tukey HSD ####
+HSD.Test_data_aov <- HSD.test(data_aov,c("Treatment","Year"), group=TRUE,console=TRUE, main="Posthoc: Tukey")
+```
+Analysis of Variance Table
+
+Response: S4SemiBin0.fa.gzround4pilon
+               Df     Sum Sq    Mean Sq F value   Pr(>F)   
+Treatment       1 2200800523 2200800523 14.3570 0.001344 **
+Year            2  389733832  194866916  1.2712 0.304498   
+Treatment:Year  2 1029352951  514676476  3.3575 0.057651 . 
+Residuals      18 2759247421  153291523    
+
+BMc:2020	108415.25	a		
+BMc:2021	91571.67	ab		
+BMc:2022	85754.25	ab		
+control:2021	82291.80	ab		
+control:2022	74894.25	b		
+control:2020	70418.50	b
+
+#S3SemiBin0.fa.gzround4pilon
+```{r}
+data_aov <- aov(S3SemiBin0.fa.gzround4pilon ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+
+# data transformation
+Index =
+  transformTukey(MAG_relabu_final$S3SemiBin0.fa.gzround4pilon,
+                 plotit=FALSE)
+data_index <- cbind(MAG_relabu_final, Index)
+
+#neue ANOVA
+data_aov_index <- aov(Index ~Treatment*Year, data_index)
+anova(data_aov_index)
+shapiro.test(residuals(data_aov_index)) # significant
+qqnorm(residuals(data_aov_index))
+leveneTest(data_aov_index) # not significant
+
+#### Tukey HSD ####
+HSD.Test_data_aov <- HSD.test(data_aov_index,c("Treatment","Year"), group=TRUE,console=TRUE, main="Posthoc: Tukey")
+```
+not significant
+
+#S1SemiBin26.fa.gzround4pilon
+```{r}
+data_aov <- aov(S1SemiBin26.fa.gzround4pilon ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+```
+not significant
+
+#S1SemiBin16.fa.gzround4pilon
+```{r}
+data_aov <- aov(S1SemiBin16.fa.gzround4pilon ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+```
+not significant
+
+#S1SemiBin12.fa.gzround4pilon
+```{r}
+data_aov <- aov(S1SemiBin12.fa.gzround4pilon ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # significant
+
+# data transformation
+Index =
+  transformTukey(MAG_relabu_final$S1SemiBin12.fa.gzround4pilon,
+                 plotit=FALSE)
+data_index <- cbind(MAG_relabu_final, Index)
+
+#neue ANOVA
+data_aov_index <- aov(Index ~Treatment*Year, data_index)
+anova(data_aov_index)
+shapiro.test(residuals(data_aov_index)) # not significant
+qqnorm(residuals(data_aov_index))
+leveneTest(data_aov_index) # not significant
+```
+not significant
+
+#MS5ResultsCTExtC2022bin.016
+```{r}
+data_aov <- aov(MS5ResultsCTExtC2022bin.016 ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+
+# data transformation
+Index =
+  transformTukey(MAG_relabu_final$MS5ResultsCTExtC2022bin.016,
+                 plotit=FALSE)
+data_index <- cbind(MAG_relabu_final, Index)
+
+#neue ANOVA
+data_aov_index <- aov(Index ~Treatment*Year, data_index)
+anova(data_aov_index)
+shapiro.test(residuals(data_aov_index)) # significant
+qqnorm(residuals(data_aov_index))
+leveneTest(data_aov_index) # not significant
+```
+not significant
+
+#MS5ResultsCTExtC2020bin.002
+```{r}
+data_aov <- aov(MS5ResultsCTExtC2020bin.002 ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # not significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # significant
+
+# data transformation
+Index =
+  transformTukey(MAG_relabu_final$MS5ResultsCTExtC2020bin.002,
+                 plotit=FALSE)
+data_index <- cbind(MAG_relabu_final, Index)
+
+#neue ANOVA
+data_aov_index <- aov(Index ~Treatment*Year, data_index)
+anova(data_aov_index)
+shapiro.test(residuals(data_aov_index)) # significant
+qqnorm(residuals(data_aov_index))
+leveneTest(data_aov_index) # not significant
+```
+not significant
+
+#MS5Resultsall2bin.027
+```{r}
+data_aov <- aov(MS5Resultsall2bin.027 ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+
+#### Tukey HSD ####
+HSD.Test_data_aov <- HSD.test(data_aov,c("Treatment","Year"), group=TRUE,console=TRUE, main="Posthoc: Tukey")
+```
+Analysis of Variance Table
+
+Response: MS5Resultsall2bin.027
+               Df     Sum Sq    Mean Sq F value    Pr(>F)    
+Treatment       1 6.5092e+10 6.5092e+10 15.6268 0.0009324 ***
+Year            2 6.8449e+09 3.4224e+09  0.8216 0.4555426    
+Treatment:Year  2 4.0708e+10 2.0354e+10  4.8864 0.0201777 *  
+Residuals      18 7.4977e+10 4.1654e+09 
+
+BMc:2020	718977.8	a		
+BMc:2022	629586.0	ab		
+control:2021	592546.0	ab		
+BMc:2021	591978.3	ab		
+control:2022	523641.0	b		
+control:2020	514450.2	b
+
+#MS5Resultsall2bin.012
+```{r}
+data_aov <- aov(MS5Resultsall2bin.012 ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # not significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+
+#### Tukey HSD ####
+HSD.Test_data_aov <- HSD.test(data_aov,c("Treatment","Year"), group=TRUE,console=TRUE, main="Posthoc: Tukey")
+```
+Analysis of Variance Table
+
+Response: MS5Resultsall2bin.012
+               Df     Sum Sq    Mean Sq F value  Pr(>F)  
+Treatment       1 1.8366e+10 1.8366e+10  7.5170 0.01341 *
+Year            2 1.0123e+10 5.0616e+09  2.0716 0.15498  
+Treatment:Year  2 2.4521e+10 1.2261e+10  5.0180 0.01854 *
+Residuals      18 4.3980e+10 2.4433e+09  
+
+BMc:2020	494930.0	a		
+control:2021	446003.0	ab		
+BMc:2022	426239.2	ab		
+BMc:2021	420909.3	ab		
+control:2022	362764.8	b		
+control:2020	361024.5	b
+
+#Genome.15 
+```{r}
+data_aov <- aov(Genome.15 ~Treatment*Year, MAG_relabu_final)
+anova(data_aov) 
+shapiro.test(residuals(data_aov)) # not significant
+qqnorm(residuals(data_aov))
+leveneTest(data_aov) # not significant
+
+#### Tukey HSD ####
+HSD.Test_data_aov <- HSD.test(data_aov,c("Treatment","Year"), group=TRUE,console=TRUE, main="Posthoc: Tukey")
+```
+Analysis of Variance Table
+
+Response: Genome.15
+               Df     Sum Sq    Mean Sq F value  Pr(>F)  
+Treatment       1 2973822612 2973822612  6.6425 0.01898 *
+Year            2 1266497182  633248591  1.4145 0.26881  
+Treatment:Year  2 2147582882 1073791441  2.3985 0.11928  
+Residuals      18 8058488189  447693788 
+
+BMc:2020	224353.5	a		
+BMc:2022	199487.2	ab		
+control:2021	199322.8	ab		
+BMc:2021	196662.0	ab		
+control:2020	180239.2	ab		
+control:2022	173217.0	b
+
+

@@ -1,0 +1,73 @@
+---
+title: "Temperature"
+author: "Theresa Kuhl-Nagel"
+date: "2025-09-20"
+output: html_document
+---
+
+```{r}
+library(ggplot2) #ggplot2: Fancy graphs
+library(ggpubr) #ggplot expansion for more fancy graphs
+library(readxl) # upload files  
+library(dplyr)# Data handling
+library(vegan)# Multivariate stat tool
+library(tidyr) # Data handling
+library(RColorBrewer) # Colours for fancy graphs
+library(tibble)# Data handling: rownames/columnanmes
+library(stringr) # Manipulate strings
+set.seed(122022)
+```
+
+```{r}
+LTE_a=  as.data.frame(read_excel("~/Data/Temperature_R.xlsx"))
+
+```
+
+```{r}
+FigS3= ggplot(LTE_a , 
+              aes(y=(C), x=Month))+
+  geom_bar(aes( fill=factor(Year)),
+           stat="summary", position = position_dodge(width = 1),
+           colour="black", linewidth=0.3)+theme_bw()+
+  
+  geom_line(stat="summary",
+            aes(y=`1991-2020`, x=Month, colour="Average (1991-2020)" ), linewidth=1)+
+  scale_colour_manual(values = "black", name="")+
+  geom_point(stat="summary", fill="white", colour="black", shape=21, size=5,
+             aes(y=`1991-2020`, x=Month ))+
+  scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10,11,12), labels = c(
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+    
+  ))+scale_fill_grey(start = 0.5, end = 0.9, name = "")+
+#scale_fill_brewer(palette = "Paired", name="")+
+  
+  theme( axis.text.y = element_text( size=15, face = "bold", colour="black")) +
+  theme(axis.text.x = element_text(size = 15, face = "bold", angle = 0, colour="black")) +
+  theme(legend.text = element_text( size=15, face="bold", colour = "black")) + 
+  theme(legend.position = "bottom",
+        axis.title.y = element_text( size=15, face = "bold", colour="black")) + 
+  theme(legend.title =  element_text( size=20, face="bold", colour = "black")) +
+  theme(legend.key.size =    unit(0.5,"cm"))+
+  theme(axis.title.x = element_text(size = 15, face = "bold", colour="black"))+
+  ylab("Average Temperature (C°)")+
+  xlab("Month") 
+
+
+```
+
+```{r, fig.width=12, fig.height=6}
+FigS3
+```
+
+

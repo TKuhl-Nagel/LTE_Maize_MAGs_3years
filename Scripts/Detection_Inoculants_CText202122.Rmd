@@ -1,0 +1,327 @@
+---
+title: "Detection Inoculants"
+author: "Theresa Kuhl-Nagel"
+date: "2023-08-01"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(car)
+```
+
+```{r}
+data <- read.table("~/Data/Inoculant_detection_BLAST_CT202122.txt", header=T, sep="\t", dec = ".")
+View(data)
+dim(data)
+data$Year <- as.factor(data$Year)
+data$Treatment <- as.factor(data$Treatment)
+```
+
+```{r}
+#General adjustments boxplots
+custom_colors <- c( "#ff9900","#146eb4")
+```
+#Bacillus atrophaeus
+```{r}
+library(dplyr)
+#standard deviation
+summary_data <- data %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(Bacillus.atrophaeus.ABi03, na.rm = TRUE),
+    sd = sd(Bacillus.atrophaeus.ABi03, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary_data, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(
+    x = expression("Year"),
+    y = expression("Relative abundance (%)"),
+  ) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = data, aes(x = Year, y = Bacillus.atrophaeus.ABi03, group = Treatment),label = "p.format")
+
+p1
+```
+
+
+#Pseudomonas sp. RU47
+
+```{r}
+library(dplyr)
+#standard deviation
+summary_data <- data %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(Pseudomonas.sp..RU47, na.rm = TRUE),
+    sd = sd(Pseudomonas.sp..RU47, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p2 <- ggplot(summary_data, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(
+    x = expression("Year"),
+    y = expression("Relative abundance (%)"),
+  ) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p2<-p2 + stat_compare_means(data = data, aes(x = Year, y = Pseudomonas.sp..RU47, group = Treatment),label = "p.format")
+
+p2
+```
+
+#Trichoderma harzianum
+
+```{r}
+library(dplyr)
+#standard deviation
+summary_data <- data %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(Trichoderma.harzianum, na.rm = TRUE),
+    sd = sd(Trichoderma.harzianum, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p3 <- ggplot(summary_data, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(
+    x = expression("Year"),
+    y = expression("Relative abundance (%)"),
+  ) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"), 
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p3<-p3 + stat_compare_means(data = data, aes(x = Year, y = Trichoderma.harzianum, group = Treatment),label = "p.format")
+
+p3
+```
+
+```{r, fig.width=12, fig.height=4}
+multi_plot <- ggarrange(
+  p1, p2,p3,
+  ncol = 3, nrow = 1, 
+  common.legend = TRUE,              
+  legend = "right"                  
+)
+multi_plot
+```
+
+#CFU counts
+
+```{r}
+data2 <- read.table("~/MS5_CTExt202122/CFU/3yearsCFU_clean2.txt", header=T, sep="\t", dec = ".")
+View(data2)
+dim(data2)
+data2$Year <- as.factor(data2$Year)
+data2$Treatment <- as.factor(data2$Treatment)
+```
+
+#Bacillus atrophaeus
+```{r}
+library(dplyr)
+#standard deviation
+summary_data2 <- data2 %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(ABi03, na.rm = TRUE),
+    sd = sd(ABi03, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p4 <- ggplot(summary_data2, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(
+    x = expression("Year"),
+    y = expression(log[10]~CFU~g^{-1}~DM),
+    title = expression(italic("Bacillus atrophaeus")~"ABi03")
+  ) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p4<-p4 + stat_compare_means(data = data2, aes(x = Year, y = ABi03, group = Treatment),label = "p.format")
+
+p4
+```
+
+#RU47
+```{r}
+library(dplyr)
+#standard deviation
+summary_data2 <- data2 %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(RU47, na.rm = TRUE),
+    sd = sd(RU47, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p5 <- ggplot(summary_data2, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(
+    x = expression("Year"),
+    y = expression(log[10]~CFU~g^{-1}~DM),
+    title = expression(italic("Pseudomonas")~"sp. RU47")
+  ) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p5<-p5 + stat_compare_means(data = data2, aes(x = Year, y = RU47, group = Treatment),label = "p.format")
+
+p5
+```
+
+#Trichoderma
+```{r}
+library(dplyr)
+#standard deviation
+summary_data2 <- data2 %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(OMG16, na.rm = TRUE),
+    sd = sd(OMG16, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p6 <- ggplot(summary_data2, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(
+    x = expression("Year"),
+    y = expression(log[10]~CFU~g^{-1}~DM),
+    title = expression(italic("Trichoderma harzianum")~"OMG16")
+  ) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p6<-p6 + stat_compare_means(data = data2, aes(x = Year, y = OMG16, group = Treatment),label = "p.format")
+
+p6
+```
+
+```{r, fig.width=12, fig.height=8}
+multi_plot <- ggarrange(
+  p4, p5, p6,p1, p2,p3,
+  ncol = 3, nrow = 2, 
+  common.legend = TRUE,              
+  legend = "right"                  
+)
+multi_plot
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,594 @@
+---
+title: "Untitled"
+author: "Theresa Kuhl-Nagel"
+date: "2025-08-12"
+output: html_document
+---
+```{r}
+library(ggplot2)
+library(patchwork)
+MAG2 <- read.table("~/Data/Mapping_matrix_all2_reduced.txt", header=T, sep="\t", dec=".") 
+head(MAG2)
+```
+
+Calculate relative abundance based on bacterial reads with hit in MAGs
+```{r}
+#separate metadata
+colnames(MAG2)
+meta_data <- MAG2[, c("Year", "Treatment", "Replicate")]
+rest_data <- MAG2[, !colnames(MAG2) %in% c("Year", "Treatment", "Replicate")]
+# View the results
+print(meta_data)
+print(rest_data)
+
+#transpose rest_data
+trest_data <- t(rest_data)
+trest_data
+
+#relative abundance
+rowsum_MAG <- rowSums(trest_data)
+rowsum_MAG
+MAG_rela <- trest_data/rowsum_MAG  
+View(MAG_rela) 
+
+#transpose back
+tMAG_rela <- t(MAG_rela)
+tMAG_rela
+
+#add meta_data again
+MAG_relabu_final <- cbind(tMAG_rela, meta_data)
+View(MAG_relabu_final)
+MAG_relabu_final
+```
+```{r}
+custom_colors <- c( "#ff9900","#146eb4")
+```
+
+
+#S4SemiBin2.fa.gzround4pilon
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(S4SemiBin2.fa.gzround4pilon, na.rm = TRUE),
+    sd = sd(S4SemiBin2.fa.gzround4pilon, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("S4SemiBin2.fa.gzround4pilon")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = S4SemiBin2.fa.gzround4pilon, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+#S4SemiBin18.fa.gzround4pilon
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(S4SemiBin18.fa.gzround4pilon, na.rm = TRUE),
+    sd = sd(S4SemiBin18.fa.gzround4pilon, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("S4SemiBin18.fa.gzround4pilon")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = S4SemiBin18.fa.gzround4pilon, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+#S4SemiBin1.fa.gzround4pilon
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(S4SemiBin1.fa.gzround4pilon, na.rm = TRUE),
+    sd = sd(S4SemiBin1.fa.gzround4pilon, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("S4SemiBin1.fa.gzround4pilon")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = S4SemiBin1.fa.gzround4pilon, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+#S4SemiBin0.fa.gzround4pilon
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(S4SemiBin0.fa.gzround4pilon, na.rm = TRUE),
+    sd = sd(S4SemiBin0.fa.gzround4pilon, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("S4SemiBin0.fa.gzround4pilon")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = S4SemiBin0.fa.gzround4pilon, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+#S3SemiBin0.fa.gzround4pilon
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(S3SemiBin0.fa.gzround4pilon, na.rm = TRUE),
+    sd = sd(S3SemiBin0.fa.gzround4pilon, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("S3SemiBin0.fa.gzround4pilon")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = S3SemiBin0.fa.gzround4pilon, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+#S1SemiBin26.fa.gzround4pilon
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(S1SemiBin26.fa.gzround4pilon, na.rm = TRUE),
+    sd = sd(S1SemiBin26.fa.gzround4pilon, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("S1SemiBin26.fa.gzround4pilon")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = S1SemiBin26.fa.gzround4pilon, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+#S1SemiBin16.fa.gzround4pilon
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(S1SemiBin16.fa.gzround4pilon, na.rm = TRUE),
+    sd = sd(S1SemiBin16.fa.gzround4pilon, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("S1SemiBin16.fa.gzround4pilon")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = S1SemiBin16.fa.gzround4pilon, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+#S1SemiBin12.fa.gzround4pilon
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(S1SemiBin12.fa.gzround4pilon, na.rm = TRUE),
+    sd = sd(S1SemiBin12.fa.gzround4pilon, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("S1SemiBin12.fa.gzround4pilon")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = S1SemiBin12.fa.gzround4pilon, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+#MS5ResultsCTExtC2022bin.016
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(MS5ResultsCTExtC2022bin.016, na.rm = TRUE),
+    sd = sd(MS5ResultsCTExtC2022bin.016, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("MS5ResultsCTExtC2022bin.016")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = MS5ResultsCTExtC2022bin.016, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+#MS5ResultsCTExtC2020bin.002
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(MS5ResultsCTExtC2020bin.002, na.rm = TRUE),
+    sd = sd(MS5ResultsCTExtC2020bin.002, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("MS5ResultsCTExtC2020bin.002")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = MS5ResultsCTExtC2020bin.002, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+#MS5Resultsall2bin.027
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(MS5Resultsall2bin.027, na.rm = TRUE),
+    sd = sd(MS5Resultsall2bin.027, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("MS5Resultsall2bin.027")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = MS5Resultsall2bin.027, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+#MS5Resultsall2bin.012
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(MS5Resultsall2bin.012, na.rm = TRUE),
+    sd = sd(MS5Resultsall2bin.012, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("MS5Resultsall2bin.012")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = MS5Resultsall2bin.012, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+#Genome.15
+```{r}
+library(dplyr)
+#standard deviation
+summary <- MAG_relabu_final %>%
+  group_by(Year, Treatment) %>%
+  summarise(
+    mean = mean(Genome.15, na.rm = TRUE),
+    sd = sd(Genome.15, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary, aes(x = Year, y = mean, fill = Treatment)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("Genome.15")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+# Use only p.format as label. Remove method name. Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = MAG_relabu_final, aes(x = Year, y = Genome.15, group = Treatment),label = "p.format", label.x = 2)#size = 3, label.y = 500
+#p1 + stat_compare_means(label = "p.signif")
+#p1 + stat_compare_means( aes(label = ..p.signif..), label.x = 1.5, label.y = 6.5)
+#p1 <- p1 + stat_compare_means(method ="anova")
+
+p1
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

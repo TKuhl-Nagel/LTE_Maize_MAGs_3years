@@ -1,0 +1,87 @@
+---
+title: "Link_diff_genes_and_MAGS"
+author: "Theresa Kuhl-Nagel"
+date: "2025-04-15"
+output: html_document
+---
+```{r}
+library(dplyr)
+```
+
+Link Plabase differential abundant genes and MAGS
+
+```{r}
+#Plabase diff abundant genes
+diffgenes2020 <- read.csv("~/Data/CText202122_Plabase_DeSeq2_beneficials_2020_details.csv")
+dim(diffgenes2020)
+head(diffgenes2020)
+as.data.frame(diffgenes2020)
+
+diffgenes2021 <- read.csv("~/Data/CText202122_Plabase_DeSeq2_beneficials_2021_details.csv")
+dim(diffgenes2021)
+head(diffgenes2021)
+
+#contigs
+contigs <- read.csv("~/Data/CTExt2022122_bacteria_Plabase.csv")
+dim(contigs)
+head(contigs)
+
+```
+```{r}
+#Remove suffix from Subject
+contigs$Subject <- gsub('_.*', '', as.character(contigs$Subject))
+contigs$Subject
+head(contigs)
+as.data.frame(contigs)
+
+#Remove "Type" and "Pfams"
+#drop columns 
+columns_to_drop <- c("Type", "Pfams")
+diffgenes2020_minor <- diffgenes2020[, !(names(diffgenes2020) %in% columns_to_drop)]
+head(diffgenes2020_minor)
+
+diffgenes2021_minor <- diffgenes2021[, !(names(diffgenes2021) %in% columns_to_drop)]
+head(diffgenes2021_minor)
+```
+
+```{r}
+contigs2020 <- merge(diffgenes2020_minor, contigs, by = "Subject", all.x = TRUE)
+head(contigs2020)
+dim(contigs2020)
+#411 (weil viele Plabase hits auf mehrere contigs passen)
+```
+export
+```{r}
+output_file <- "~/Data/DeSeq_diffgenes2020_bacteria_Plabase_contigs.csv"
+write.csv(contigs2020, output_file, row.names = FALSE)
+```
+
+```{r}
+contigs2021 <- merge(diffgenes2021_minor, contigs, by = "Subject", all.x = TRUE)
+head(contigs2021)
+dim(contigs2021)
+#71 (weil viele Plabase hits auf mehrere contigs passen)
+```
+
+export
+```{r}
+output_file <- "~/Data/DeSeq_diffgenes2021_bacteria_Plabase_contigs.csv"
+write.csv(contigs2021, output_file, row.names = FALSE)
+```
+
+#Extract contig numbers from files
+```{r}
+write.table(contigs2020$reference, "~/Data/DeSeq_contigs2020.txt", 
+            sep = ",",          # Separate values with commas
+            row.names = FALSE,  # Exclude row numbers
+            col.names = FALSE,  # Exclude column headers
+            quote = FALSE)      # Avoid quoting strings
+```
+
+```{r}
+write.table(contigs2021$reference, "~/Data/DeSeq_contigs2021.txt", 
+            sep = ",",          # Separate values with commas
+            row.names = FALSE,  # Exclude row numbers
+            col.names = FALSE,  # Exclude column headers
+            quote = FALSE)      # Avoid quoting strings
+```

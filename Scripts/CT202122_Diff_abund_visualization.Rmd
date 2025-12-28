@@ -1,0 +1,261 @@
+---
+title: "CT202122_Diff_abund_visualization"
+author: "Theresa Kuhl-Nagel"
+date: "2025-08-05"
+output: html_document
+---
+
+```{r}
+KO20 <- read.csv("~/Data/CText202122_KO_DeSeq2_beneficials_2020.csv")
+View(KO20)
+dim(KO20)
+
+KO21 <- read.csv("~/Data/CText202122_KO_DeSeq2_beneficials_2021.csv")
+View(KO21)
+dim(KO21)
+
+```
+
+```{r}
+# Create group for coloring based on logFC sign
+KO20$direction <- ifelse(KO20$log2FoldChange >= 0, "Up", "Down")
+KO21$direction <- ifelse(KO21$log2FoldChange >= 0, "Up", "Down")
+custom_colors <- c( "#ff9900","#146eb4")
+
+min_val <- min(c(KO20$log2FoldChange, KO21$log2FoldChange))
+max_val <- max(c(KO20$log2FoldChange, KO21$log2FoldChange))
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Sort and factor gene names by logFC
+KO20 <- KO20 %>%
+  arrange(desc(log2FoldChange)) %>%
+  mutate(X = factor(X, levels = X),
+         direction = ifelse(log2FoldChange >= 0, "Up", "Down"))
+
+# Sort and factor gene names by logFC
+KO21 <- KO21 %>%
+  arrange(desc(log2FoldChange)) %>%
+  mutate(X = factor(X, levels = X),
+         direction = ifelse(log2FoldChange >= 0, "Up", "Down"))
+```
+
+```{r}
+# Barplot
+p1 <- ggplot(KO20, aes(x = X, y = log2FoldChange, fill = direction)) +
+  geom_col(width = 0.9, color = "black") +
+  scale_fill_manual(values = custom_colors) +
+  theme_minimal() +
+  labs(x = expression("KO") , y = expression(log[2]~FC) ) +
+  theme(panel.background = element_rect(fill = "white"),
+  panel.grid.major = element_line(color = "gray95", linewidth = 0.5),
+  panel.grid.minor = element_line(color = "gray95", linewidth = 0.25),
+  axis.line = element_line(color = "black", linewidth = 0.7),
+  panel.border = element_blank(),
+  legend.position = "none")+
+  coord_flip()
+p1
+```
+
+
+```{r}
+# Barplot
+p2 <- ggplot(KO21, aes(x = X, y = log2FoldChange, fill = direction)) +
+  geom_col(width = 0.9, color = "black") +
+  scale_fill_manual(values = custom_colors) +
+  theme_minimal() +
+  labs(x = expression("KO") , y = expression(log[2]~FC) ) +
+  theme(panel.background = element_rect(fill = "white"),
+  panel.grid.major = element_line(color = "gray95", linewidth = 0.5),
+  panel.grid.minor = element_line(color = "gray95", linewidth = 0.25),
+  axis.line = element_line(color = "black", linewidth = 0.7),
+  panel.border = element_blank(),
+  legend.position = "none")+
+  coord_flip()
+p2
+```
+Combine plots
+```{r, fig.width=8, fig.height=10}
+combined_plot <- ggarrange(p1, p2,
+          ncol = 1, nrow = 2,
+          heights = c(15, 6),  
+          align = "v",        
+          common.legend = FALSE) 
+
+print(combined_plot)
+```
+
+
+```{r}
+P20 <- read.csv("~/Data/CText202122_Plabase_DeSeq2_beneficials_2020.csv")
+View(P20)
+dim(P20)
+
+P21 <- read.csv("~/Data/CText202122_Plabase_DeSeq2_beneficials_2021.csv")
+View(P21)
+dim(P21)
+
+```
+
+```{r}
+# Create group for coloring based on logFC sign
+P20$direction <- ifelse(P20$log2FoldChange >= 0, "Up", "Down")
+P21$direction <- ifelse(P21$log2FoldChange >= 0, "Up", "Down")
+custom_colors <- c( "#ff9900","#146eb4")
+
+min_val <- min(c(P20$log2FoldChange, P21$log2FoldChange))
+max_val <- max(c(P20$log2FoldChange, P21$log2FoldChange))
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Sort and factor gene names by logFC
+P20 <- P20 %>%
+  arrange(desc(log2FoldChange)) %>%
+  mutate(X = factor(X, levels = X),
+         direction = ifelse(log2FoldChange >= 0, "Up", "Down"))
+
+# Sort and factor gene names by logFC
+P21 <- P21 %>%
+  arrange(desc(log2FoldChange)) %>%
+  mutate(X = factor(X, levels = X),
+         direction = ifelse(log2FoldChange >= 0, "Up", "Down"))
+```
+
+```{r}
+# Barplot without adapted lables
+px <- ggplot(P20, aes(x = X, y = log2FoldChange, fill = direction)) +
+  geom_col(width = 0.9, color = "black") +
+  scale_fill_manual(values = custom_colors) +
+  theme_minimal() +
+  labs( x = expression("") ,y = expression(log[2]~FC) ) +
+  theme(panel.background = element_rect(fill = "white"),
+  panel.grid.major = element_line(color = "gray95", linewidth = 0.5),
+  panel.grid.minor = element_line(color = "gray95", linewidth = 0.25),
+  axis.line = element_line(color = "black", linewidth = 0.7),
+  panel.border = element_blank(),
+  legend.position = "none")+
+  coord_flip()
+px
+```
+```{r}
+#adapt labels according to order of p1
+myLabelsP20 <- c(
+  expression(paste(italic("dppC1"), " (Heavy metal resistance)")),
+  expression(paste(italic("ituB|mycB|bmyB"), " (Iturin, fungicide)")),
+  expression(paste(italic("ppsA|fenC"), " (Fengycin, fungicide)")),
+  expression(paste(italic("srfAA|lchAA"), " (Surfactin, lipopeptide)")),
+  expression(paste(italic("ispC|dxr"), " (ROS scavenging)")),
+  expression(paste(italic("groEL|mopA"), " (High temp tolerance)")),
+  expression(paste(italic("elf18|tuf|tufA"), " (PAMP triggered immunity)")),
+  expression(paste(italic("clpX"), " (High temp tolerance)")),
+  expression(paste(italic("atpD"), " (Salinity stess reduction)")),
+  expression(paste(italic("glnA"), " (N-acquisition, xenobiotic degradation)")),
+  expression(paste(italic("icd"), " (Phosphate solubilization)")),
+  expression(paste(italic("argG"), " (Colonization)")),
+  expression(paste(italic("ctrA"), " (Motility, chemotaxis)")),
+  expression(paste(italic("chvI"), " (Acidic stress reduction)")),
+  expression(paste(italic("nrdB|nrdF"), " (Pyrimidin, colonization)")),
+  expression(paste(italic("dcd"), " (Pyrimidin, colonization)")),
+  expression(paste(italic("acpP"), " (Antibiotic)")),
+  expression(paste(italic("urtA"), " (N-acquisition)")),
+  expression(paste(italic("gyaR"), " (Colonization)")),
+  expression(paste(italic("ABC_SP_S|ydcS"), " (Spermidine, stress control)")),
+  expression(paste(italic("pdaD|aaxB"), " (Fungicide)"))
+)  
+
+```
+
+```{r}
+# Barplot without adapted lables
+p7 <- ggplot(P20, aes(x = X, y = log2FoldChange, fill = direction)) +
+  geom_col(width = 0.9, color = "black") +
+  scale_fill_manual(values = custom_colors) +
+  scale_x_discrete(labels = myLabelsP20)+
+  theme_minimal() +
+  labs( x = expression("") ,y = expression(log[2]~FC) ) +
+  theme(panel.background = element_rect(fill = "white"),
+  panel.grid.major = element_line(color = "gray95", linewidth = 0.5),
+  panel.grid.minor = element_line(color = "gray95", linewidth = 0.25),
+  axis.line = element_line(color = "black", linewidth = 0.7),
+  axis.text.x = element_text(size = 12),
+  axis.text.y = element_text(size = 12),
+  panel.border = element_blank(),
+  legend.position = "none")+
+  coord_flip()
+p7
+```
+
+```{r}
+# Barplot
+py <- ggplot(P21, aes(x = X, y = log2FoldChange, fill = direction)) +
+  geom_col(width = 0.9, color = "black") +
+  scale_fill_manual(values = custom_colors) +
+  theme_minimal() +
+  labs(x = expression("") ,y = expression(log[2]~FC) ) + 
+  theme(panel.background = element_rect(fill = "white"),
+  panel.grid.major = element_line(color = "gray95", linewidth = 0.5),
+  panel.grid.minor = element_line(color = "gray95", linewidth = 0.25),
+  axis.line = element_line(color = "black", linewidth = 0.7),
+  panel.border = element_blank(),
+  legend.position = "none")+
+  coord_flip()
+py
+```
+
+```{r}
+#adapt labels according to order of p3
+myLabelsP21 <- c(
+  expression(paste(italic("baeG|pksG|dfnL"), " (Antibiotic)")),
+  expression(paste(italic("pyrDI"), " (Pyrimidin metabolism, colonization)")),
+  expression(paste(italic("ppsB|fenD"), " (Fengycin, fungicide)")),
+  expression(paste(italic("srfAC|lchAC"), " (Surfactin, lipopeptide)")),
+  expression(paste(italic("baeN|pksN|mlnB|mlnD|dfnG"), " (Antibiotic)")),
+  expression(paste(italic("icd"), " (Phosphate solubilization)")),
+  expression(paste(italic("gapA"), " (C-glycolysis)")),
+  expression(paste(italic("pilT"), " (T2SS, motility)")),
+  expression(paste(italic("acnB"), " (Phosphate solubilization)"))
+)  
+
+```
+
+```{r}
+# Barplot
+p8 <- ggplot(P21, aes(x = X, y = log2FoldChange, fill = direction)) +
+  geom_col(width = 0.9, color = "black") +
+  scale_fill_manual(values = custom_colors) +
+  scale_x_discrete(labels = myLabelsP21)+
+  theme_minimal() +
+  labs(x = expression("") ,y = expression(log[2]~FC) ) + 
+  theme(
+  panel.background = element_rect(fill = "white"),
+  panel.grid.major = element_line(color = "gray95", linewidth = 0.5),
+  panel.grid.minor = element_line(color = "gray95", linewidth = 0.25),
+  axis.line = element_line(color = "black", linewidth = 0.7),
+  axis.text.x = element_text(size = 12),
+  axis.text.y = element_text(size = 12),
+  panel.border = element_blank(),
+  legend.position = "none")+
+  coord_flip()
+p8
+```
+
+Combine plots
+```{r, fig.width=12, fig.height=6}
+
+combined_plot <- ggarrange(p7, p8,
+          ncol = 1, nrow = 2,
+          heights = c(10, 5),  
+          align = "h",        
+          common.legend = FALSE) 
+
+print(combined_plot)
+```
+
+

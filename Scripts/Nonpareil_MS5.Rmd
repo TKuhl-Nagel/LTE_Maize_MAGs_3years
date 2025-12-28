@@ -1,0 +1,20 @@
+---
+title: "Nonpareil MS5"
+author: "Theresa Kuhl-Nagel"
+date: "2025-02-07"
+output: html_document
+---
+```{r}
+library(Nonpareil)
+```
+
+#Nonpareil curves
+```{r, dev = "jpg"}
+samples <- read.table('~/Data/Nonpareil_CText202122_Metadata.txt', header=TRUE, as.is=TRUE);
+attach(samples);
+nps <- Nonpareil.set(File, col=Col, labels=Name, plot.opts=list(xlim = c(1e+6,1e+18), ylim = c(0, 1.2), xlab = "Sequencing effort (bp)", ylab = "Estimated average coverage", plot.diversity = FALSE, plot.observed=FALSE, legend.opts = list(cex = 0.6, x = 'bottomright', bty = "n", ncol = 2, title = "Year, Inoculation")));
+detach(samples);
+summary <- summary(nps)
+
+#write.table(summary, "~/Data/Nonpareil_Summary_CText202122.txt")
+```

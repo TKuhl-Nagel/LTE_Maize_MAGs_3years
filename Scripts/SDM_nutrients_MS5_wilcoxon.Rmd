@@ -1,0 +1,433 @@
+---
+title: "SDM_nutrients_MS5"
+author: "Theresa Kuhl-Nagel"
+date: "2025-05-27"
+output: html_document
+---
+
+```{r}
+library(ggpubr)
+library(car)
+library(agricolae)
+library(dunn.test)
+```
+
+Load data
+```{r}
+SDM <- read.table("~/Data/Growth_Data_for_LTEs.txt", header=T, sep="\t", dec=".", quote="", fill=FALSE)
+dim(SDM)
+head(SDM) 
+SDM <- SDM[, c("CODE", "Year", "BENEFICIALS", "Shoot_DW")]
+SDM <- SDM [c(1:24),]
+SDM$Year <- as.factor(SDM$Year)
+SDM$BENEFICIALS <- as.factor(SDM$BENEFICIALS)
+
+
+Nu <- read.table("~/Data/Nutrients_20_21_22.txt", header=T, sep="\t", dec=".", quote="", fill=FALSE)
+dim(Nu)
+head(Nu)
+Nu$Year <- as.factor(Nu$Year)
+Nu$BMc <- as.factor(Nu$BMc)
+
+```
+
+```{r}
+#General adjustments boxplots
+custom_colors <- c( "#ff9900","#146eb4")
+```
+
+#SDM P1
+```{r}
+library(dplyr)
+#standard deviation
+summary_SDM <- SDM %>%
+  group_by(Year, BENEFICIALS) %>%
+  summarise(
+    mean = mean(Shoot_DW, na.rm = TRUE),
+    sd = sd(Shoot_DW, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p1 <- ggplot(summary_SDM, aes(x = Year, y = mean, fill = BENEFICIALS)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("SDM g plant"^{-1})) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p1<-p1 + stat_compare_means(data = SDM, aes(x = Year, y = Shoot_DW, group = BENEFICIALS),label = "p.format", label.x = 2,size = 3, label.y = 500)
+
+p1
+```
+
+#Ca P2
+```{r}
+library(dplyr)
+#standard deviation
+summary_Ca <- Nu %>%
+  group_by(Year, BMc) %>%
+  summarise(
+    mean = mean(Ca.g.kg., na.rm = TRUE),
+    sd = sd(Ca.g.kg., na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p2 <- ggplot(summary_Ca, aes(x = Year, y = mean, fill = BMc)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("Ca g kg"^{-1}~"SDM")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p2 <- p2 + stat_compare_means(data = Nu, aes(x = Year, y = Ca.g.kg., group = BMc),label = "p.format", label.x = 2,size = 3, label.y = 7)
+p2
+```
+
+#Cu P3
+```{r}
+library(dplyr)
+#standard deviation
+summary_Cu <- Nu %>%
+  group_by(Year, BMc) %>%
+  summarise(
+    mean = mean(Cu.mg.kg., na.rm = TRUE),
+    sd = sd(Cu.mg.kg., na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p3 <- ggplot(summary_Cu, aes(x = Year, y = mean, fill = BMc)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("Cu mg kg"^{-1}~"SDM")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p3 <- p3 + stat_compare_means(data = Nu, aes(x = Year, y = Cu.mg.kg., group = BMc),label = "p.format", label.x = 2,size = 3, label.y = 10)
+p3
+```
+
+Fe P4
+```{r}
+library(dplyr)
+#standard deviation
+summary_Fe <- Nu %>%
+  group_by(Year, BMc) %>%
+  summarise(
+    mean = mean(Fe.mg.kg., na.rm = TRUE),
+    sd = sd(Fe.mg.kg., na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p4 <- ggplot(summary_Fe, aes(x = Year, y = mean, fill = BMc)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("Fe mg kg"^{-1}~"SDM")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p4 <- p4 + stat_compare_means(data = Nu, aes(x = Year, y = Fe.mg.kg., group = BMc),label = "p.format", label.x = 2,size = 3, label.y = 110)
+p4
+```
+
+
+K P5
+```{r}
+library(dplyr)
+#standard deviation
+summary_K <- Nu %>%
+  group_by(Year, BMc) %>%
+  summarise(
+    mean = mean(K.g.kg., na.rm = TRUE),
+    sd = sd(K.g.kg., na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p5 <- ggplot(summary_K, aes(x = Year, y = mean, fill = BMc)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("K g kg"^{-1}~"SDM")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p5 <- p5 + stat_compare_means(data = Nu, aes(x = Year, y = K.g.kg., group = BMc),label = "p.format", label.x = 2,size = 3, label.y = 25)
+p5
+```
+
+Mg P6
+```{r}
+library(dplyr)
+#standard deviation
+summary_Mg <- Nu %>%
+  group_by(Year, BMc) %>%
+  summarise(
+    mean = mean(Mg.g.kg., na.rm = TRUE),
+    sd = sd(Mg.g.kg., na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p6 <- ggplot(summary_Mg, aes(x = Year, y = mean, fill = BMc)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("Mg g kg"^{-1}~"SDM")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p6 <- p6 + stat_compare_means(data = Nu, aes(x = Year, y = Mg.g.kg., group = BMc),label = "p.format", label.x = 2,size = 3, label.y = 2.0)
+p6
+```
+
+
+Mn P7
+```{r}
+library(dplyr)
+#standard deviation
+summary_Mn <- Nu %>%
+  group_by(Year, BMc) %>%
+  summarise(
+    mean = mean(Mn.mg.kg., na.rm = TRUE),
+    sd = sd(Mn.mg.kg., na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p7 <- ggplot(summary_Mn, aes(x = Year, y = mean, fill = BMc)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("Mn mg kg"^{-1}~"SDM")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p7 <- p7 + stat_compare_means(data = Nu, aes(x = Year, y = Mn.mg.kg., group = BMc),label = "p.format", label.x = 2,size = 3, label.y = 100)
+p7
+```
+
+
+P P8
+```{r}
+library(dplyr)
+#standard deviation
+summary_P <- Nu %>%
+  group_by(Year, BMc) %>%
+  summarise(
+    mean = mean(P.g.kg., na.rm = TRUE),
+    sd = sd(P.g.kg., na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p8 <- ggplot(summary_P, aes(x = Year, y = mean, fill = BMc)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("P g kg"^{-1}~"SDM")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p8 <- p8 + stat_compare_means(data = Nu, aes(x = Year, y = P.g.kg., group = BMc),label = "p.format", label.x = 2,size = 3, label.y = 3)
+p8
+```
+
+S P9
+```{r}
+library(dplyr)
+#standard deviation
+summary_S <- Nu %>%
+  group_by(Year, BMc) %>%
+  summarise(
+    mean = mean(S.g.kg., na.rm = TRUE),
+    sd = sd(S.g.kg., na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p9 <- ggplot(summary_S, aes(x = Year, y = mean, fill = BMc)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("S g kg"^{-1}~"SDM")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p9 <- p9 + stat_compare_means(data = Nu, aes(x = Year, y = S.g.kg., group = BMc),label = "p.format", label.x = 2,size = 3, label.y = 2.3)
+p9
+```
+
+Zn P10
+```{r}
+library(dplyr)
+#standard deviation
+summary_Zn <- Nu %>%
+  group_by(Year, BMc) %>%
+  summarise(
+    mean = mean(Zn.mg.kg., na.rm = TRUE),
+    sd = sd(Zn.mg.kg., na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Bar plot 
+p10 <- ggplot(summary_Zn, aes(x = Year, y = mean, fill = BMc)) +
+  geom_col(position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    position = position_dodge(width = 0.9),
+    width = 0.2
+  ) +
+  labs(x = "Year", y = expression("Zn mg kg"^{-1}~"SDM")) +
+  scale_fill_manual(values = custom_colors) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    legend.title = element_blank()
+  )
+
+
+# Default method = Wilcoxon test
+p10 <- p10 + stat_compare_means(data = Nu, aes(x = Year, y = Zn.mg.kg., group = BMc),label = "p.format", size = 3, label.x = 2, label.y = 55)
+p10
+```
+
+
+
+```{r, fig.width=12, fig.height=7}
+multi_plot <- ggarrange(
+  p1, p2,p3,p4, p5, p6, p7, p8, p9, p10, 
+  ncol = 5, nrow = 2, 
+  common.legend = TRUE,              
+  legend = "right"                  
+)
+multi_plot
+```

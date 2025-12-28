@@ -1,0 +1,75 @@
+---
+title: "Categories_functional_analysis"
+author: "Theresa Kuhl-Nagel"
+date: "2025-03-11"
+output: html_document
+---
+
+Load data
+```{r}
+Plabase <- read.csv("~/Data/plabase_map_info.csv")
+dim(Plabase)
+head(Plabase) 
+
+eggNOG <- read_excel("~/Data/Nucleotide_Contigs_CT202122_eggNOGmapper_annotations.xlsx")
+dim(eggNOG)
+head(eggNOG)
+eggNOGDB <- as.data.frame(eggNOG)
+head(eggNOG)
+```
+
+Files
+```{r}
+File1 <- read.csv("~/MS5_CTExt202122/DeSeq2/CText202122_KO_DeSeq2_beneficials_2020.csv")
+File2 <- read.csv("~/MS5_CTExt202122/DeSeq2/CText202122_KO_DeSeq2_beneficials_2021.csv")
+```
+
+Change header of first column to KO
+```{r}
+colnames(File1)[1] <- "KO"
+colnames(File2)[1] <- "KO"
+```
+
+Add details to output file
+```{r}
+CCE <- left_join(File1,eggNOG,  by = "KO")
+head(CCE)
+dim(CCE)
+```
+
+```{r}
+write.csv(CCE, "~/Data/CText202122_KO_DeSeq2_beneficials_2020_details.csv", row.names = FALSE)
+```
+
+
+
+Files
+```{r}
+File5 <- read.csv("~/MS5_CTExt202122/DeSeq2/CText202122_Plabase_DeSeq2_beneficials_2020.csv")
+File6 <- read.csv("~/MS5_CTExt202122/DeSeq2/CText202122_Plabase_DeSeq2_beneficials_2021.csv")
+```
+
+Change header of first column to Factor
+```{r}
+colnames(File5)[1] <- "Factor"
+colnames(File6)[1] <- "Factor"
+```
+
+Add details to output file
+```{r}
+CCE <- left_join(File5,Plabase,  by = "Factor")
+head(CCE)
+dim(CCE)
+```
+
+```{r}
+write.csv(CCE, "~/Data/CText202122_Plabase_DeSeq2_beneficials_2020_details.csv", row.names = FALSE)
+```
+
+
+
+
+
+
+
+

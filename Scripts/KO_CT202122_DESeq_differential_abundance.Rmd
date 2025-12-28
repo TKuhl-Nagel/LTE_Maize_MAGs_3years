@@ -1,0 +1,109 @@
+---
+title: "CT202122_statistics_ordination"
+author: "Theresa Kuhl-Nagel"
+date: "2024-06-24"
+output: html_document
+---
+```{r}
+library(agricolae)
+library(vegan)
+library(phyloseq)
+library(RColorBrewer)
+library(ggplot2)
+library(ellipse)
+library(writexl)
+```
+
+Load data
+Details to count matrix: only hits annotated as bacteria according to eggNOGDB v5.6 and hits from cutsimized DB were analysed. Rows with same gene were summed up. 
+```{r}
+KO <- read.csv("~/Data/CTExt2022122_bacteria_KO_eggNOGDB_sum.csv", row.names = 1)
+dim(KO)
+head(KO)
+
+metadat <- read.table("~/Data/Metadata_CTExt202122.txt", header=T, sep="\t", dec=".") 
+head(metadat)
+```
+
+
+
+#Separate years
+```{r}
+KO2020 <- KO[ , c(1:8)]
+head(KO2020)
+dim(KO2020)
+
+KO2021 <- KO[,c(9:16) ]
+head(KO2021)
+dim(KO2021)
+
+KO2022 <- KO[, c(17:24)]
+head(KO2022)
+dim(KO2022)
+
+#Metadata
+meta2020 <- metadat[c(1:8), ]
+meta2021<- metadat[c(9:16), ]
+meta2022<- metadat[c(17:24), ]
+```
+
+#Subset data for years
+2020
+```{r}
+# Create DESeqDataSet for Year 2020 (only treatment effect)
+dds_2020 <- DESeqDataSetFromMatrix(countData = KO2020, 
+                                    colData = meta2020, 
+                                    design = ~ Beneficials)  # Design formula with treatment
+
+# Run DESeq2 for Year 2020
+dds_2020 <- DESeq(dds_2020) #try local or mean as a different fit?
+res_2020 <- results(dds_2020)
+summary(res_2020)
+
+# Filter for significant results (padj < 0.05, for example)
+res_2020_sig <- res_2020[which(res_2020$padj < 0.05), ]
+print(res_2020_sig)
+#log2 fold change (MLE): Beneficials Control vs BMc 
+#Wald test p-value: Beneficials Control vs BMc 
+#DataFrame with 43 rows and 6 columns
+```
+
+2021
+```{r}
+# Create DESeqDataSet for Year 2021 (only treatment effect)
+dds_2021 <- DESeqDataSetFromMatrix(countData = KO2021, 
+                                    colData = meta2021, 
+                                    design = ~ Beneficials)  # Design formula with treatment
+
+# Run DESeq2 for Year 2021
+dds_2021 <- DESeq(dds_2021) #try local or mean as a different fit?
+res_2021 <- results(dds_2021)
+summary(res_2021)
+
+# Filter for significant results (padj < 0.05, for example)
+res_2021_sig <- res_2021[which(res_2021$padj < 0.05), ]
+print(res_2021_sig)
+#log2 fold change (MLE): Beneficials Control vs BMc 
+#Wald test p-value: Beneficials Control vs BMc 
+#DataFrame with 13 rows and 6 columns
+```
+
+2022
+```{r}
+# Create DESeqDataSet for Year 2022 (only treatment effect)
+dds_2022 <- DESeqDataSetFromMatrix(countData = KO2022, 
+                                    colData = meta2022, 
+                                    design = ~ Beneficials)  # Design formula with treatment
+
+# Run DESeq2 for Year 2022
+dds_2022 <- DESeq(dds_2022) #try local or mean as a different fit?
+res_2022 <- results(dds_2022)
+summary(res_2022)
+
+# Filter for significant results (padj < 0.05, for example)
+res_2022_sig <- res_2022[which(res_2022$padj < 0.05), ]
+print(res_2022_sig)
+#log2 fold change (MLE): Beneficials Control vs BMc 
+#Wald test p-value: Beneficials Control vs BMc 
+#DataFrame with 0 rows and 6 columns
+```
