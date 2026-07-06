@@ -79,7 +79,10 @@ multiple_glms_ASVs_df_list=rbind(multiple_glms_ASVs_df_list,
 
 multiple_glms_ASVs_df_list2=filter(multiple_glms_ASVs_df_list, padj<0.05)
 multiple_glms_ASVs_df_list3=full_join(Taxonomy,multiple_glms_ASVs_df_list2)%>%filter(FC!="NA")
-
+ multiple_glms_ASVs_df_list3$tax.Genus[is.na( multiple_glms_ASVs_df_list3$tax.Genus)]="Unclassified"
+write.csv(rename( multiple_glms_ASVs_df_list3, "log2FC"="FC"),
+          "Differential_Abundance_Table_ASVs_with_Full_taxonomy.csv")
+ 
 ```
 ```{r}
 plot1= ggplot(multiple_glms_ASVs_df_list3, 
